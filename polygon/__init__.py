@@ -34,7 +34,10 @@ class PolygonGenerator:
         print("ARF",self.potvertex)
         self.potconnectiondict[0].remove(randomfreepoint)
         if len(self.potconnectiondict[1])>1:
-            self.potconnectiondict[2].append(self.potconnectiondict[1].pop())
+            from1to2 = self.potconnectiondict[1].pop()
+            pos = self.points.index(from1to2)
+
+            self.potconnectiondict[2].append(from1to2)
         self.potconnectiondict[1].append(randomfreepoint)
 
 
@@ -145,13 +148,12 @@ class PolygonGenerator:
         print("COZC",self.potconnectiondict[0],self.potvertex)
         zerolen = len(self.potconnectiondict[0])
         if zerolen == 1:
-            pointApos = self.points.index[self.potconnectiondict[1][0]]
-            pointBpos = self.potconnectiondict[1][1]
-            pointCpos = self.potconnectiondict[0][0]
-            if self.potsegmentsmatrix[self.points]
-
-            return True
-
+            pointApos = self.points.index(self.potconnectiondict[1][0])
+            pointBpos = self.points.index(self.potconnectiondict[1][1])
+            pointCpos = self.points.index(self.potconnectiondict[0][0])
+            if self.potsegmentsmatrix[pointApos][pointCpos] == 1:
+                if self.potsegmentsmatrix[pointBpos][pointCpos] == 1:
+                    return True
         return False
 
     def checklatestaddedpoint(self):

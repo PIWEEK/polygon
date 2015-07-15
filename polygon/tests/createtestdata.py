@@ -79,9 +79,16 @@ if __name__=="__main__":
     print(n.numpoints,n.connectiondict)
     n.addrandomfreepoint()
     while True:
+        print("connectiondict[0]",n.connectiondict[0])
+        print("connectiondict[1]",n.connectiondict[1])
+        print("connectiondict[2]",n.connectiondict[2])
+
         n.addrandomfreepoint()
         print("POT POLY",n.potvertex)
+        print("potsegmentsmatrix\n",n.potsegmentsmatrix)
         n.deletesegments()
+        print("NEW potsegmentsmatrix\n",n.potsegmentsmatrix)
+
         if n.checknoleftrightdisconnection():
             print("not pass -1")
             n.potvertex.pop()
@@ -90,9 +97,7 @@ if __name__=="__main__":
         else:
             if n.checkonlyonezeroconnected():
                 print("pass 0")
-                print("connectiondict[0]",n.connectiondict[0])
-                print("connectiondict[1]",n.connectiondict[1])
-                print("connectiondict[2]",n.connectiondict[2])
+
                 n.vertex = copy(n.potvertex)
                 n.vertex.append(n.potconnectiondict[0][0])
                 n.vertex.append(n.potvertex[0])
