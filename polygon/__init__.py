@@ -2,6 +2,7 @@ import intersect
 import numpy
 import random
 from copy import copy
+import common
 
 class PolygonGenerator:
 
@@ -20,6 +21,8 @@ class PolygonGenerator:
 
         self.potvertex = []
 
+        self.leftpoints = []
+        self.rightpoints = []
 
 
     def __str__(self):
@@ -43,25 +46,77 @@ class PolygonGenerator:
             self.potconnectiondict[2].append(self.potconnectiondict[1][-1])
         self.potconnectiondict[1].append(point)
 
+    def checknoleftrightdisconnection(self):
+        leftrightdisconnection = True
+        if self.potvertex[-1] in self.leftpoints:
+            self.leftpoints.remove(self.potvertex[-1])
+        if self.potvertex[-1] in self.rightpoints:
+            self.rightpoints.remove(self.potvertex[-1])
+        if self.potvertex[0] in self.leftpoints:
+            self.leftpoints.remove(self.potvertex[0])
+        if self.potvertex[0] in self.rightpoints:
+            self.rightpoints.remove(self.potvertex[0])
+
+        print("pointsL",self.leftpoints)
+        print("pointsR",self.rightpoints)
+        for pointL in self.leftpoints:
+            posL = self.points.index(pointL)
+            for pointR in self.rightpoints:
+                posR = self.points.index(pointR)
+                if self.potsegmentsmatrix[posL][posR] == 1:
+                    leftrightdisconnection = False
+                    return leftrightdisconnection
+        if len(self.rightpoints) == 0 or len(self.leftpoints) == 0:
+            leftrightdisconnection = False
+        return leftrightdisconnection
+
+
     def deletesegments(self):
-        print("DS",self.potvertex)
+        #print("DS",self.potvertex)
         newpotside = (self.potvertex[-2], self.potvertex[-1])
 
         potentialsegs = numpy.where(self.potsegmentsmatrix > 0)
         size = len(potentialsegs[0])
+        self.leftpoints = []
+        self.rightpoints = []
         for i in range(size):
 
             potseg = (potentialsegs[0][i],potentialsegs[1][i])
             apotside = (self.points[potseg[0]], self.points[potseg[1]])
-            if newpotside[0] in apotside or newpotside[1] in apotside:
+            if False:#newpotside[0] in apotside or newpotside[1] in apotside:
                 continue
             else:
+                if (self.points[potseg[0]] in self.connectiondict[0] or self.points[potseg[0]] in self.connectiondict[1]):
+                #print("Analsis",newpotside,apotside)
+                #print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]])
+                    if common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]]):
+                        if self.points[potseg[0]] not in self.leftpoints:
+                            self.leftpoints.append(self.points[potseg[0]])
+                    else:
+                        if self.points[potseg[0]] not in self.rightpoints:
+                            self.rightpoints.append(self.points[potseg[0]])
+                if (self.points[potseg[1]] in self.connectiondict[0] or self.points[potseg[1]] in self.connectiondict[1]):
+                #print("Analsis",newpotside,apotside)
+                #print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]])
+                    if common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]]):
+                        if self.points[potseg[1]] not in self.leftpoints:
+                            self.leftpoints.append(self.points[potseg[1]])
+                    else:
+                        if self.points[potseg[1]] not in self.rightpoints:
+                            self.rightpoints.append(self.points[potseg[1]])
+
+                # print("isLeft",)
+                # print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]])
+                # print("isLeft",common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]]))
+
                 if intersect.doIntersect(newpotside[0],newpotside[1],apotside[0],apotside[1]):
-                    print("intersectan",newpotside,apotside)
+                    #print("intersectan",newpotside,apotside)
+
                     self.potsegmentsmatrix[self.points.index(apotside[1])][self.points.index(apotside[0])] = 0
                     self.potsegmentsmatrix[self.points.index(apotside[0])][self.points.index(apotside[1])] = 0
                 else:
-                    print("NO intersectan",newpotside,apotside)
+                    pass
+                    #print("NO intersectan",newpotside,apotside)
         return True
 
     def checkisolatedzeroconnected(self):
@@ -90,11 +145,14 @@ class PolygonGenerator:
         print("COZC",self.potconnectiondict[0],self.potvertex)
         zerolen = len(self.potconnectiondict[0])
         if zerolen == 1:
+            pointApos = self.points.index[self.potconnectiondict[1][0]]
+            pointBpos = self.potconnectiondict[1][1]
+            pointCpos = self.potconnectiondict[0][0]
+            if self.potsegmentsmatrix[self.points]
+
             return True
 
         return False
-
-
 
     def checklatestaddedpoint(self):
         latestvertex = self.potvertex[-1]
@@ -113,7 +171,7 @@ class PolygonGenerator:
         pos = self.points.index(point)
         print(self.potsegmentsmatrix)
         openorfree = numpy.where(self.potsegmentsmatrix[pos]>0)
-        print("openorfree",openorfree)
+        #print("openorfree",openorfree)
         for posy in openorfree[0]:
             segisfree = self.points[posy] in self.potconnectiondict[0]
             if segisfree:
