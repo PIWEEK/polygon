@@ -1,4 +1,4 @@
-<TeXmacs|1.99.2>
+<TeXmacs|1.0.7.18>
 
 <style|article>
 
@@ -109,7 +109,12 @@
     <math|1-connected> point and at least one <math|0-connected> or
     <math|1-connected> point.
 
-    <item>If 4) is passed the polygon can still be. At this moment, this
+    <item>If 4) is passed, check the status of all <math|1-connected> and
+    <math|0-connected> points at any given side of the last segment. If at
+    least one point from one side retains an initial segment to the other
+    side, the polygon may still be.
+
+    <item>If 5) is passed the polygon can still be. At this moment, this
     polygon is considered a polygon generator and can spawn a new exploring
     technique.
   </enumerate-numeric>
@@ -147,16 +152,16 @@
 
 <\references>
   <\collection>
-    <associate|auto-1|<tuple|1|1|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-2|<tuple|1.1|1|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-3|<tuple|1|1|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-4|<tuple|2|1|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-5|<tuple|3|2|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-6|<tuple|3.1|2|../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-1|<tuple|1|1>>
+    <associate|auto-2|<tuple|1.1|1>>
+    <associate|auto-3|<tuple|1|1>>
+    <associate|auto-4|<tuple|2|1>>
+    <associate|auto-5|<tuple|3|2>>
+    <associate|auto-6|<tuple|3.1|2>>
     <associate|docs-internal-guid-001c0da2-8669-4c9e-9147-004cf410a071|<tuple|1|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
     <associate|docs-internal-guid-001c0da2-866b-796e-e4d6-9618b64d4468|<tuple|1.1|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
     <associate|docs-internal-guid-001c0da2-866f-005d-f483-f78b89a2fea2|<tuple|1.1|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|docs-internal-guid-001c0da2-8708-c9cf-3122-50f47b8e5c11|<tuple|5|2|../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|docs-internal-guid-001c0da2-8708-c9cf-3122-50f47b8e5c11|<tuple|6|2>>
   </collection>
 </references>
 
@@ -171,7 +176,7 @@
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-1><vspace|0.5fn>
 
-      <with|par-left|<quote|1tab>|1.1<space|2spc>Definitions
+      <with|par-left|<quote|1.5fn>|1.1<space|2spc>Definitions
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-2>>
 
@@ -183,7 +188,7 @@
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-5><vspace|0.5fn>
 
-      <with|par-left|<quote|1tab>|3.1<space|2spc>Rules to discard impossible
+      <with|par-left|<quote|1.5fn>|3.1<space|2spc>Rules to discard impossible
       polygon <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-6>>
     </associate>
