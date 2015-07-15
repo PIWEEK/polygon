@@ -92,7 +92,7 @@
   <subsection|Rules to discard impossible polygon>
 
   <\enumerate-numeric>
-    <item>Check if there is only one <math|0-connected> points lef. If the
+    <item>Check if there is only one <math|0-connected> points left. If the
     two <math|1-connected> points can be connected through this
     <math|0-connected> point, we store this as a valid polygon.
 
