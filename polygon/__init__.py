@@ -1,8 +1,109 @@
-import intersect
 import numpy
 import random
-from copy import copy
-import common
+from copy import deepcopy
+import time
+
+# def doIntersect(p0,p1,p2,p3):
+#     p0_x = p0[0]
+#     p0_y = p0[1]
+#     p1_x = p1[0]
+#     p1_y = p1[1]
+#     p2_x = p2[0]
+#     p2_y = p2[1]
+#     p3_x = p3[0]
+#     p3_y = p3[1]
+#
+#     s1_x = p1_x - p0_x
+#     s1_y = p1_y - p0_y
+#     s2_x = p3_x - p2_x
+#     s2_y = p3_y - p2_y
+#
+#     try:
+#         s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y)
+#         t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y)
+#
+#         if (s>= 0 and s <= 1 and t >= 0 and t <= 1):
+#         #collision detected
+#             i_x = p0_x + (t * s1_x);
+#             i_y = p0_y + (t * s1_y)
+#             return (True, (i_x,i_y))
+#     except:
+#         #colinear
+#         return (False, (-1,-1))
+#
+#     return (False, (-1,-1))
+
+def onSegment(p, q, r):
+    if (q[0] < max(p[0], r[0]) and q[0] > min(p[0], r[0]) and \
+        q[1] < max(p[1], r[1]) and q[1] > min(p[1], r[1])):
+        return True
+    return False
+
+def orientation(p, q, r):
+
+    val = (q[1] - p[1]) * (r[0] - q[0]) -\
+    (q[0] - p[0]) * (r[1] - q[1])
+
+    if val == 0:
+        return 0
+    if val > 0:
+        return 1
+    else:
+        return 2
+
+def doIntersect(p1, q1, p2, q2):
+
+    if p1==p2 or p1==q2:
+        return False
+    if q1==p2 or q1==q2:
+        return False
+
+
+    o1 = orientation(p1, q1, p2)
+    o2 = orientation(p1, q1, q2)
+    o3 = orientation(p2, q2, p1)
+    o4 = orientation(p2, q2, q1)
+
+    if (o1 != o2 and o3 != o4):
+        #print("I 0")
+        return True
+
+    # if (o1 == 0 and onSegment(p1, p2, q1)):
+    #     print("I 1")
+    #     print("->",p1,p2,q1)
+    #     return True
+    #
+    # if (o2 == 0 and onSegment(p1, q2, q1)):
+    #     print("I 2")
+    #     print("->",p1,q2,q1)
+    #     return True
+    #
+    # if (o3 == 0 and onSegment(p2, p1, q2)):
+    #     print("I 3")
+    #     print("->",p2,p1,q2)
+    #     return True
+    #
+    # if (o4 == 0 and onSegment(p2, q1, q2)):
+    #     print("I 4")
+    #     print("->",p2,q1,q2)
+    #     return True
+    #
+
+    return False
+
+def whereIntersect(p1, p2, p3, p4):
+
+    ua = ((p4[0] - p3[0])*(p1[1]-p3[1]) - (p4[1]-p3[1])*(p1[0]-p3[0]))/((p4[1]-p3[1])*(p2[0]-p1[0]) - (p4[0]-p3[0])*(p2[1]-p1[1]))
+    ub = ((p2[0] - p1[0])*(p1[1]-p3[1]) - (p2[1]-p1[1])*(p1[0]-p3[0]))/((p4[1]-p3[1])*(p2[0]-p1[0]) - (p4[0]-p3[0])*(p2[1]-p1[1]))
+
+    x = p1[0] + ua*(p2[0]-p1[0])
+    y = p1[1] + ua*(p2[1]-p1[1])
+
+    return ((x,y),ua,ub)
+
+
+def isLeft(pointA, pointB, pointC):
+    return (pointB[0] - pointA[0])*(pointC[1] - pointA[1]) > (pointB[1] - pointA[1])*(pointC[0] - pointA[0])
 
 
 class PolygonStruct:
@@ -12,7 +113,7 @@ class PolygonStruct:
         listofpoints.sort()
         self.lop = listofpoints
         self.size = len(listofpoints)
-        self.conn0 = []
+        self.conn0 = deepcopy(self.lop)
         self.conn1 = []
         self.conn2 = []
 
@@ -22,7 +123,7 @@ class PolygonStruct:
         for i in range(self.size):
             self.segments[i][i] = 0
 
-        self.tempconn0 = []
+        self.tempconn0 = deepcopy(self.lop)
         self.tempconn1 = []
         self.tempconn2 = []
 
@@ -40,20 +141,32 @@ class PolygonStruct:
 
     def temptostable(self):
 
-        self.conn0 = copy(self.tempconn0)
-        self.conn1 = copy(self.tempconn1)
-        self.conn2 = copy(self.tempconn2)
-        self.vertexlist = copy(self.tempvertexlist)
-        self.segments = copy(self.tempsegments)
+        self.conn0 = deepcopy(self.tempconn0)
+        self.conn1 = deepcopy(self.tempconn1)
+        self.conn2 = deepcopy(self.tempconn2)
+
+        self.vertexlist = deepcopy(self.tempvertexlist)
+        self.segments = deepcopy(self.tempsegments)
+        print("TTOSTABLE --->", self.tempsegments)
+
 
     def reverttostable(self):
 
-        self.tempconn0 = copy(self.conn0)
-        self.tempconn1 = copy(self.conn1)
-        self.tempconn2 = copy(self.conn2)
-        self.tempvertexlist = copy(self.vertexlist)
-        self.tempsegments = copy(self.segments)
+        self.tempconn0 = deepcopy(self.conn0)
+        self.tempconn1 = deepcopy(self.conn1)
+        self.tempconn2 = deepcopy(self.conn2)
+        self.tempvertexlist = deepcopy(self.vertexlist)
+        self.tempsegments = deepcopy(self.segments)
+        print("STABLE --->", self.tempsegments)
 
+
+    def destroyconn2links(self):
+        if len(self.tempvertexlist) > 2:
+            previousvertex = self.tempvertexlist[-2]
+            pos = self.givepos(previousvertex)
+            for i in range(self.size):
+                self.tempsegments[i][pos] = 0
+                self.tempsegments[pos][i] = 0
 
     def existstempseg(self, pointA, pointB):
         posA = self.givepos(pointA)
@@ -68,70 +181,153 @@ class PolygonStruct:
             pointC = self.tempconn0[-1]
             pointA = self.tempconn1[0]
             pointB = self.tempconn1[-1]
-            if existstempseg(pointA, pointC) and existstempseg(pointB, pointC):
+            if self.existstempseg(pointA, pointC) and self.existstempseg(pointB, pointC):
                 return True
             else:
                 return False
+        return False
 
     def checklatestaddedpoint(self):
         latestpoint = self.tempconn1[-1]
         for afreepoint in self.tempconn0:
-            if existstempseg(latestpoint, afreepoint):
+            if self.existstempseg(latestpoint, afreepoint):
                 return True
         return False
 
     def checkfirstaddedpoint(self):
+        #print("----->",self.tempsegments)
         firstpoint = self.tempconn1[0]
         for afreepoint in self.tempconn0:
-            if existstempseg(firstpoint, afreepoint):
+            if self.existstempseg(firstpoint, afreepoint):
                 return True
         return False
 
     def checkallzeroconnpoints(self):
-        if len(self.tempconn0) > 0:
+        if len(self.tempconn0) > 1:
             for afreepoint in self.tempconn0:
-                res = 0
+                res = [0,0]
                 for anopenpoint in self.tempconn1:
-                    if existstempseg(afreepoint, anopenpoint):
-                        res += 1
-                        break
+                    if self.existstempseg(afreepoint, anopenpoint):
+                        res[0] += 1
+                        if res[0] > 2:
+                            break
                 for anotherfreepoint in self.tempconn0:
-                    if existstempseg(afreepoint anotherfreepoint):
-                        res += 1
-                        break
-                if res != 2:
+                    if self.existstempseg(afreepoint, anotherfreepoint):
+                        print("NOAISLADO",afreepoint,anotherfreepoint)
+                        #time.sleep(0.1)
+                        res[1] += 1
+                if res[1] == 0:
+                    print("AISLADO",afreepoint)
                     return False
+                    #time.sleep(1)
+                #     if res[0] > 1:
+                #         return True
+                # elif res[1] > 0:
+                #     if res[0] > 0:
+                #         return True
         else:
-            return False
+            return True
 
         return True
 
     def checksides(self):
+        #print("iiiii xxx->",self.tempsegments)
         self.leftpoints = []
         self.rightpoints = []
         newpotside = (self.tempvertexlist[-2], self.tempvertexlist[-1])
         for freepoint in self.tempconn0:
-            if common.isLeft(newpotside[0],newpotside[1],freepoint):
+            if isLeft(newpotside[0],newpotside[1],freepoint):
                 self.leftpoints.append(freepoint)
             else:
                 self.rightpoints.append(freepoint)
+        if len(self.leftpoints) == 0 or len(self.rightpoints) == 0:
+            return True
         for aleftie in self.leftpoints:
             posL = self.givepos(aleftie)
             for arightie in self.rightpoints:
                 posR = self.givepos(arightie)
-                if self.tempsegments[posL,posR] == 1:
+                if self.tempsegments[posL][posR] == 1:
                     return True
+        #print("FALSE xxx->",self.tempsegments)
+        return False
+
+    def checksidesprevside(self):
+        #print("iiiii xxx->",self.tempsegments)
+        if len(self.tempvertexlist) > 2:
+            self.leftpoints = []
+            self.rightpoints = []
+            newpotside = (self.tempvertexlist[-3], self.tempvertexlist[-2])
+            for freepoint in self.tempconn0:
+                if isLeft(newpotside[0],newpotside[1],freepoint):
+                    self.leftpoints.append(freepoint)
+                else:
+                    self.rightpoints.append(freepoint)
+            if len(self.leftpoints) == 0 or len(self.rightpoints) == 0:
+                return True
+            for aleftie in self.leftpoints:
+                posL = self.givepos(aleftie)
+                for arightie in self.rightpoints:
+                    posR = self.givepos(arightie)
+                    if self.tempsegments[posL][posR] == 1:
+                        return True
+            #print("FALSE xxx->",self.tempsegments)
+        else:
+            return True
         return False
 
 
-    def attemptnewvertex(self):
-        newvertex = random.choice(self.tempconn0)
+    def checkescaperoute(self):
+        latestpos = self.givepos(self.tempvertexlist[-1])
+        notvisiblefreepoints = []
+        for freepoint in self.tempconn0:
+            pos = self.givepos(freepoint)
+            if self.tempsegments[latestpos][pos] == 0:
+                notvisiblefreepoints.append(freepoint)
+        for nvfp in notvisiblefreepoints:
+            pos = self.givepos(nvfp)
+            if self.tempsegments[0][pos] == 1:
+                return True
+
+        return False
+
+    def initializetempdata(self):
+        self.tempconn0 = deepcopy(self.conn0)
+        self.tempconn1 = deepcopy(self.conn1)
+        self.tempconn2 = deepcopy(self.conn2)
+        self.tempvertexlist = deepcopy(self.vertexlist)
+        self.tempsegments = deepcopy(self.segments)
+
+    def pickinitialvertex(self):
+        self.attemptnewvertex(self.lop[0])
+        print("INITIAL VERTEX",self.tempvertexlist[0])
+
+    def attemptnewvertex(self, vertex=None):
+        #self.initializetempdata()
+        if vertex == None:
+            print("tempconn0",self.tempconn0)
+            if len(self.tempvertexlist) > 2:
+                candidates = []
+                poslastadded = self.givepos(self.tempvertexlist[-1])
+                for i in range(self.size):
+                    if self.tempsegments[poslastadded][i] == 1:
+                        if self.lop[i] in self.tempconn0:
+                            candidates.append(self.lop[i])
+                print("candidates->",candidates)
+                newvertex = random.choice(candidates)
+            else:
+                newvertex = random.choice(self.tempconn0)
+        else:
+            newvertex = vertex
+        print("newvertex",newvertex)
         self.tempconn0.remove(newvertex)
+        if len(self.tempconn1) > 1:
+            self.tempconn2.append(self.tempconn1.pop())
         self.tempconn1.append(newvertex)
-        self.tempconn2.append(self.tempconn1.pop())
         self.tempvertexlist.append(newvertex)
 
-        self.deletesegments()
+        if len(self.tempvertexlist) > 1:
+            self.deletesegments()
+            self.destroyconn2links()
 
     def closepolygon(self):
         self.tempconn2.append(self.tempconn1.pop())
@@ -147,250 +343,72 @@ class PolygonStruct:
         for i in range(self.size):
             for j in range(self.size):
                 if self.tempsegments[i][j] == 1:
-                    potsegments.append((self.lop[i],self.lop[j]))
+                    if self.lop[i] != newpotside[1] and self.lop[j] != newpotside[1] \
+                    and self.lop[j] != newpotside[0] and self.lop[j] != newpotside[0]:
+                        potsegments.append((self.lop[i],self.lop[j]))
         for potseg in potsegments:
-            if intersect.doIntersect(newpotside[0],newpotside[1],potseg[0],potseg[1]):
-                posA = self.givepos(potseg[0])
-                posB = self.givepos(potseg[1])
-                self.tempsegments[posA][posB] = 0
-                self.tempsegments[posB][posA] = 0
+            res = doIntersect(newpotside[0],newpotside[1],potseg[0],potseg[1])
+            if res:
+                try:
+                    resw = whereIntersect(newpotside[0],newpotside[1],potseg[0],potseg[1])
+                    if resw[0] != newpotside[1] and resw[0] != newpotside[0]:
+                        posA = self.givepos(potseg[0])
+                        posB = self.givepos(potseg[1])
+                        self.tempsegments[posA][posB] = 0
+                        self.tempsegments[posB][posA] = 0
+                        print("deleted seg:",posA,posB)
+
+                except:
+                    pass
+
+        # for closedpoint in self.tempconn2:
+        #     pos = self.givepos(closedpoint)
+        #     for i in range(self.size):
+        #         self.tempsegments[pos][i] = 0
+        #         self.tempsegments[i][pos] = 0
+        #         print("deleted seg (2-conn):",pos,i)
+        #
+
+        latestpoint = self.tempconn1[-1]
+        pos = self.givepos(latestpoint)
+        previouspoint = self.givepos(self.tempconn1[-2])
+        self.tempsegments[pos][previouspoint] = 0
+        self.tempsegments[previouspoint][pos] = 0
+        print("deleted seg:",pos,previouspoint)
+
+        print("Done deleting segments")
+
 
 
 
     def chainoftheorems(self):
-        if self.checkonlyonevalidzeropointleft():
-            self.closepolygon()
-
-            print("VALID POLYGON",self.vertex)
+        if len(self.tempvertexlist) < 2:
+            self.temptostable()
         else:
-            if self.checklatestaddedpoint():
-                if self.checkfirstaddedpoint():
-                    if self.checkallzeroconnpoints():
-                        if self.checksides():
-                            self.temptostable()
+            if self.checkonlyonevalidzeropointleft():
+                self.closepolygon()
+
+                print("VALID POLYGON",self.vertexlist)
+            else:
+                if self.checklatestaddedpoint():
+                    if self.checkfirstaddedpoint():
+                        if self.checkallzeroconnpoints():
+                            if self.checksides():
+                                if self.checksidesprevside():
+                                    self.temptostable()
+                                else:
+                                    print("FAILED AT PREVCHECKSIDES")
+                                    self.reverttostable()
+                            else:
+                                print("FAILED AT CHECKSIDES")
+                                self.reverttostable()
                         else:
+                            print("FAILED AT CHECKALLZEROCONNPOINTS")
+                            #time.sleep(1)
                             self.reverttostable()
                     else:
+                        print("FAILED AT CHECKFIRSTADDEDPOINT")
                         self.reverttostable()
                 else:
+                    print("FAILED AT CHECKLASTADDEDPOINT")
                     self.reverttostable()
-            else:
-                self.reverttostable()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class PolygonGenerator:
-
-    def __init__(self, numpoints, points, sidesmatrix, segmentsmatrix, connectiondict):
-        self.numpoints = numpoints
-        self.points = points
-        self.sidesmatrix = sidesmatrix
-        self.segmentsmatrix = segmentsmatrix
-        self.connectiondict = connectiondict
-
-        self.vertex = []
-
-        self.potsidesmatrix = copy(sidesmatrix)
-        self.potsegmentsmatrix = copy(segmentsmatrix)
-        self.potconnectiondict = copy(connectiondict)
-
-        self.potvertex = []
-
-        self.leftpoints = []
-        self.rightpoints = []
-
-
-    def __str__(self):
-        return "A"
-
-    def addrandomfreepoint(self):
-        randomfreepoint = random.choice(self.connectiondict[0])
-        self.potvertex.append(randomfreepoint)
-        print("ARF",self.potvertex)
-        self.potconnectiondict[0].remove(randomfreepoint)
-        if len(self.potconnectiondict[1])>1:
-            from1to2 = self.potconnectiondict[1].pop()
-            pos = self.points.index(from1to2)
-
-            self.potconnectiondict[2].append(from1to2)
-        self.potconnectiondict[1].append(randomfreepoint)
-
-
-
-    def addpoint(self, point):
-        self.potvertex.append(point)
-        self.potconnectiondict[0].remove(point)
-        if len(self.potconnectiondict[1])>2:
-            self.potconnectiondict[2].append(self.potconnectiondict[1][-1])
-        self.potconnectiondict[1].append(point)
-
-    def checknoleftrightdisconnection(self):
-        leftrightdisconnection = True
-        if self.potvertex[-1] in self.leftpoints:
-            self.leftpoints.remove(self.potvertex[-1])
-        if self.potvertex[-1] in self.rightpoints:
-            self.rightpoints.remove(self.potvertex[-1])
-        if self.potvertex[0] in self.leftpoints:
-            self.leftpoints.remove(self.potvertex[0])
-        if self.potvertex[0] in self.rightpoints:
-            self.rightpoints.remove(self.potvertex[0])
-
-        print("pointsL",self.leftpoints)
-        print("pointsR",self.rightpoints)
-        for pointL in self.leftpoints:
-            posL = self.points.index(pointL)
-            for pointR in self.rightpoints:
-                posR = self.points.index(pointR)
-                if self.potsegmentsmatrix[posL][posR] == 1:
-                    leftrightdisconnection = False
-                    return leftrightdisconnection
-        if len(self.rightpoints) == 0 or len(self.leftpoints) == 0:
-            leftrightdisconnection = False
-        return leftrightdisconnection
-
-
-    def deletesegments(self):
-        #print("DS",self.potvertex)
-        newpotside = (self.potvertex[-2], self.potvertex[-1])
-
-        potentialsegs = numpy.where(self.potsegmentsmatrix > 0)
-        size = len(potentialsegs[0])
-        self.leftpoints = []
-        self.rightpoints = []
-        for i in range(size):
-
-            potseg = (potentialsegs[0][i],potentialsegs[1][i])
-            apotside = (self.points[potseg[0]], self.points[potseg[1]])
-            if False:#newpotside[0] in apotside or newpotside[1] in apotside:
-                continue
-            else:
-                if (self.points[potseg[0]] in self.connectiondict[0] or self.points[potseg[0]] in self.connectiondict[1]):
-                #print("Analsis",newpotside,apotside)
-                #print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]])
-                    if common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]]):
-                        if self.points[potseg[0]] not in self.leftpoints:
-                            self.leftpoints.append(self.points[potseg[0]])
-                    else:
-                        if self.points[potseg[0]] not in self.rightpoints:
-                            self.rightpoints.append(self.points[potseg[0]])
-                if (self.points[potseg[1]] in self.connectiondict[0] or self.points[potseg[1]] in self.connectiondict[1]):
-                #print("Analsis",newpotside,apotside)
-                #print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[0]])
-                    if common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]]):
-                        if self.points[potseg[1]] not in self.leftpoints:
-                            self.leftpoints.append(self.points[potseg[1]])
-                    else:
-                        if self.points[potseg[1]] not in self.rightpoints:
-                            self.rightpoints.append(self.points[potseg[1]])
-
-                # print("isLeft",)
-                # print(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]])
-                # print("isLeft",common.isLeft(self.potvertex[-2], self.potvertex[-1],self.points[potseg[1]]))
-
-                if intersect.doIntersect(newpotside[0],newpotside[1],apotside[0],apotside[1]):
-                    #print("intersectan",newpotside,apotside)
-
-                    self.potsegmentsmatrix[self.points.index(apotside[1])][self.points.index(apotside[0])] = 0
-                    self.potsegmentsmatrix[self.points.index(apotside[0])][self.points.index(apotside[1])] = 0
-                else:
-                    pass
-                    #print("NO intersectan",newpotside,apotside)
-        return True
-
-    def checkisolatedzeroconnected(self):
-        freepoints = {}
-        for freepoint in self.potconnectiondict[0]:
-            freepoints[freepoint] = [0,0]
-
-        isolated = False
-        for apoint in self.potconnectiondict[0]:
-            for bpoint in self.potconnectiondict[0]:
-                if self.potsegmentsmatrix[self.points.index(apoint)][self.points.index(bpoint)] == 1:
-                    freepoints[apoint][0]+=1
-        for apoint in self.potconnectiondict[0]:
-            for bpoint in self.potconnectiondict[1]:
-                if self.potsegmentsmatrix[self.points.index(apoint)][self.points.index(bpoint)] == 1:
-                    freepoints[apoint][1]+=1
-        for key,value in freepoints.items():
-            if sum(value) < 2:
-                print("ISOLATED!",key)
-                isolated = True
-                #return isolated
-        return isolated
-
-
-    def checkonlyonezeroconnected(self):
-        print("COZC",self.potconnectiondict[0],self.potvertex)
-        zerolen = len(self.potconnectiondict[0])
-        if zerolen == 1:
-            pointApos = self.points.index(self.potconnectiondict[1][0])
-            pointBpos = self.points.index(self.potconnectiondict[1][1])
-            pointCpos = self.points.index(self.potconnectiondict[0][0])
-            if self.potsegmentsmatrix[pointApos][pointCpos] == 1:
-                if self.potsegmentsmatrix[pointBpos][pointCpos] == 1:
-                    return True
-        return False
-
-    def checklatestaddedpoint(self):
-        latestvertex = self.potvertex[-1]
-        return self.checkifzerosegforpoint(latestvertex)
-
-    def checkinitialpoint(self):
-        initialvertex = self.potvertex[0]
-        return self.checkifzerosegforpoint(initialvertex)
-
-    def checkallzeroconnected(self):
-        pass
-#        for point in self.potconnectiondict[0]:
-
-
-    def checkifzerosegforpoint(self, point):
-        pos = self.points.index(point)
-        print(self.potsegmentsmatrix)
-        openorfree = numpy.where(self.potsegmentsmatrix[pos]>0)
-        #print("openorfree",openorfree)
-        for posy in openorfree[0]:
-            segisfree = self.points[posy] in self.potconnectiondict[0]
-            if segisfree:
-                return True
-        return False
-
-
-
-class Polygon:
-    pass

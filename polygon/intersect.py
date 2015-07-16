@@ -30,7 +30,7 @@ def doIntersect(p1, q1, p2, q2):
     o4 = orientation(p2, q2, q1)
 
     if (o1 != o2 and o3 != o4):
-        print("I 0")
+        #print("I 0")
         return True
 
     if (o1 == 0 and onSegment(p1, p2, q1)):
