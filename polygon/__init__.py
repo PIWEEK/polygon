@@ -277,18 +277,45 @@ class PolygonStruct:
 
 
     def checkescaperoute(self):
-        latestpos = self.givepos(self.tempvertexlist[-1])
-        notvisiblefreepoints = []
-        for freepoint in self.tempconn0:
-            pos = self.givepos(freepoint)
-            if self.tempsegments[latestpos][pos] == 0:
-                notvisiblefreepoints.append(freepoint)
-        for nvfp in notvisiblefreepoints:
-            pos = self.givepos(nvfp)
-            if self.tempsegments[0][pos] == 1:
+        if len(self.tempvertexlist) > 2:
+            newpoint = self.tempvertexlist[-1]
+            self.leftpoints = []
+            self.rightpoints = []
+            prevpotside = (self.tempvertexlist[-3], self.tempvertexlist[-2])
+            for freepoint in self.tempconn0:
+                if isLeft(prevpotside[0],prevpotside[1],freepoint):
+                    self.leftpoints.append(freepoint)
+                else:
+                    self.rightpoints.append(freepoint)
+            if len(self.leftpoints) == 0 or len(self.rightpoints) == 0:
                 return True
 
+            lefties = 0
+            righties = 0
+            for aleftie in self.leftpoints:
+                posL = self.givepos(aleftie)
+                posN = self.givepos(newpoint)
+                if self.tempsegments[posL][posN] == 1:
+                    lefties += 1
+
+
+            for arightie in self.rightpoints:
+                posR = self.givepos(arightie)
+                posN = self.givepos(newpoint)
+                if self.tempsegments[posR][posN] == 1:
+                    righties += 1
+
+            if righties==len(self.rightpoints) or lefties==len(self.leftpoints):
+                return True
+            else:
+                return False
+            #print("FALSE xxx->",self.tempsegments)
+        else:
+            return True
         return False
+
+
+
 
     def initializetempdata(self):
         self.tempconn0 = deepcopy(self.conn0)
@@ -395,7 +422,12 @@ class PolygonStruct:
                         if self.checkallzeroconnpoints():
                             if self.checksides():
                                 if self.checksidesprevside():
-                                    self.temptostable()
+
+                                    if self.checkescaperoute():
+                                        self.temptostable()
+                                    else:
+                                        print("FAILED AT ESCAPEROUTE")
+                                        self.reverttostable()
                                 else:
                                     print("FAILED AT PREVCHECKSIDES")
                                     self.reverttostable()

@@ -7,7 +7,7 @@ from os import system
 import time
 from math import sqrt
 
-def listofrandompoints(n=12):
+def listofrandompoints(n=8):
 
     dimx = 20
     dimy = 20
@@ -44,10 +44,10 @@ if __name__=="__main__":
         return False
 
     newlistofpoints = listofpoints()
-    #newlistofpoints = listofpoints()
+    #newlistofpoints = listofrandompoints()
     uniquepolygons = []
 
-    for i in range(10):
+    for i in range(1):
         polygonstruct = polygon.PolygonStruct(newlistofpoints)
         polygonstruct.pickinitialvertex()
 
@@ -68,7 +68,7 @@ if __name__=="__main__":
     template = resfile.read()
     size = len(uniquepolygons)
     dim = int(sqrt(size))
-    text = "set multiplot layout %i,%i rowsfirst"%(dim,dim)
+    text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
     template = template + text + "\n"
 
     for p in uniquepolygons:

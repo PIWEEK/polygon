@@ -25,7 +25,8 @@ from copy import copy
 from os import system
 
 def listofpoints():
-    alist = [(1, 8), (2, 3), (4, 1), (5, 1), (6, 1), (6,5),(7,3),(9,6)]
+    #alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7, 8),(8,3)]
+    alist = [(1, 8), (2, 3), (4, 1), (5, 1), (6, 1),(6,5),(7,3),(9,6)]
     return alist
 
 newlistofpoints = listofpoints()
@@ -35,5 +36,5 @@ n.chainoftheorems()
 n.attemptnewvertex((7,3))
 n.chainoftheorems()
 n.attemptnewvertex((5,1))
-
+n.chainoftheorems()
 #n.tempvertexlist
