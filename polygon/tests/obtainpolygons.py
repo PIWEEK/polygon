@@ -47,7 +47,7 @@ if __name__=="__main__":
     #newlistofpoints = listofrandompoints()
     uniquepolygons = []
 
-    for i in range(1):
+    for i in range(4):
         polygonstruct = polygon.PolygonStruct(newlistofpoints)
         polygonstruct.pickinitialvertex()
 
@@ -62,7 +62,7 @@ if __name__=="__main__":
         #time.sleep(2)
         if not checkpolygonexists(finalvertex, uniquepolygons):
             uniquepolygons.append(finalvertex)
-    print("\n\n\n",uniquepolygons)
+    print("\nUNIQUEPOLYGONS-------------------->\n\n",uniquepolygons)
 
     resfile = open("template.gnu",'r')
     template = resfile.read()
@@ -80,11 +80,11 @@ if __name__=="__main__":
     finaltext = open("final.gnu","w")
     finaltext.write(template)
     finaltext.close()
+    system("gnuplot final.gnu && gwenview polygons.png 2>/dev/null")
 
-
-    # resfile = open("data.gnu","w")
-    # for point in finalvertex:
-    #     resfile.write(" ".join([str(point[0]),str(point[1])]))
-    #     resfile.write("\n")
-    # resfile.close()
-    # system("gnuplot export.gnu && gwenview polygon.png 2>/dev/null")
+#    resfile = open("data.gnu","w")
+#    for point in finalvertex:
+#        resfile.write(" ".join([str(point[0]),str(point[1])]))
+#        resfile.write("\n")
+#    resfile.close()
+#    system("gnuplot export.gnu && gwenview polygon.png 2>/dev/null")
