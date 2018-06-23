@@ -6,6 +6,7 @@ from copy import copy
 from os import system
 import time
 from math import sqrt
+from collections import OrderedDict
 
 def listofrandompoints(n=8):
 
@@ -25,7 +26,8 @@ def listofpoints():
 
 
     alist = [(1, 8), (2, 3), (4, 1), (5, 1), (6, 1),(6,5),(7,3),(9,6)]
-#    alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7, 8),(8,3)]
+    alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7, 8),(8,3)]
+    alist = [(0, 8), (2, 1), (3, 3), (5, 4), (8,3)]
 #    alist = [(1,2),(7,4),(10,11),(15,9),(15,17),(16,6), (17,2), (18,1), (19,8)]
     return alist
 
@@ -33,21 +35,55 @@ if __name__=="__main__":
 
 
     def checksamepolygon(pol1,pol2):
+
+        print("POL1 vs POL2",pol1,pol2)
+        
+        if pol1 == pol2[::-1]:
+            return True
+
+        if pol1 == pol2:
+            return True
+
+        return False
+    
         for i in range(len(pol1)):
             if pol1[i] != pol2[i]:
                 return False
+        print("IGUAL A OTRO")
         return True
+
     def checkpolygonexists(pol1, pollist):
         for p in pollist:
             if checksamepolygon(pol1,p):
                 return True
         return False
 
+
+    def centrefinalvertex(pol, initialvertex):
+        
+        print("INITIALVERTEX",initialvertex)
+        polr = pol[:]
+        polr.reverse()
+        if polr < pol:
+            pol = polr
+        index = pol.index(initialvertex)
+        if index != 0:
+            print("INDEX IS",index,pol)
+            temppol = pol[index:]+pol[:index]
+            temppol = list(OrderedDict.fromkeys(temppol))
+            print("TEMPPOL",temppol)
+            temppol.append(initialvertex)
+            print("CENTRED POLYGON/ORIGINAL POLYGON:--------------->",temppol,pol)
+            return temppol
+        
+        return pol
+    
     newlistofpoints = listofpoints()
+    initialvertex = newlistofpoints[0]
     #newlistofpoints = listofrandompoints()
     uniquepolygons = []
 
-    for i in range(4):
+    for i in range(10):
         polygonstruct = polygon.PolygonStruct(newlistofpoints)
         polygonstruct.pickinitialvertex()
 
@@ -59,11 +95,14 @@ if __name__=="__main__":
         finalvertex = polygonstruct.vertexlist
         finalvertex.append(polygonstruct.vertexlist[0])
         print("final",finalvertex,i)
+        centredpolygon = centrefinalvertex(finalvertex, initialvertex)
+        
         #time.sleep(2)
-        if not checkpolygonexists(finalvertex, uniquepolygons):
-            uniquepolygons.append(finalvertex)
+        if not checkpolygonexists(centredpolygon, uniquepolygons):
+            uniquepolygons.append(centredpolygon)
     print("\nUNIQUEPOLYGONS-------------------->\n\n",uniquepolygons)
-
+    uniquepolygons.sort()
+    print("\nUNIQUEPOLYGONSSORTED-------------------->\n\n",uniquepolygons)
     resfile = open("template.gnu",'r')
     template = resfile.read()
     size = len(uniquepolygons)
@@ -75,7 +114,7 @@ if __name__=="__main__":
         ptext = "set object 1 polygon from "
         for i in p[:-1]:
             ptext += "%i, %i to "%(i[0],i[1])
-        ptext += "%i, %i"%(p[-1][0],p[-1][1])
+        ptext += "%i, %i fillstyle transparent"%(p[-1][0],p[-1][1])
         template = template + ptext +"\nplot f(x) with lines ls 1\n"
     finaltext = open("final.gnu","w")
     finaltext.write(template)
