@@ -19,32 +19,32 @@ def orientation(p, q, r):
 def doIntersect(p1, q1, p2, q2):
 
     # Shared points
-    
+
     if p1==p2 or p1==q2:
         return False
     if q1==p2 or q1==q2:
         return False
 
     # Points belong to other line
-    
-    a = p1[1]-p2[1]
-    b = (q2[1]-p2[1])*(p1[0]-p2[0])/(q2[0]-p2[0])
+    #
+    # a = p1[1]-p2[1]
+    # b = (q2[1]-p2[1])*(p1[0]-p2[0])/(q2[0]-p2[0])
+    #
+    # c = q1[1]-p2[1]
+    # d = (q2[1]-p2[1])*(q1[0]-p2[0])/(q2[0]-p2[0])
+    #
+    # e = p2[1]-p1[1]
+    # f = (q1[1]-p1[1])*(p2[0]-p1[0])/(q1[0]-p1[0])
+    #
+    # g = q2[1]-p1[1]
+    # h = (q1[1]-p1[1])*(q2[0]-p1[0])/(q1[0]-p1[0])
 
-    c = q1[1]-p2[1]
-    d = (q2[1]-p2[1])*(q1[0]-p2[0])/(q2[0]-p2[0])
+    #
+    # if a==b or c==d:
+    #     return False
+    # if e==f or g==h:
+    #     return False
 
-    e = p2[1]-p1[1]
-    f = (q1[1]-p1[1])*(p2[0]-p1[0])/(q1[0]-p1[0])
-
-    g = q2[1]-p1[1]
-    h = (q1[1]-p1[1])*(q2[0]-p1[0])/(q1[0]-p1[0])
-
-
-    if a==b or c==d:
-        return False
-    if e==f or g==h:
-        return False
-    
     o1 = orientation(p1, q1, p2)
     o2 = orientation(p1, q1, q2)
     o3 = orientation(p2, q2, p1)
@@ -90,5 +90,12 @@ if __name__=="__main__":
     q1 = (0, 10)
     p2 = (0, 0)
     q2 = (0, 10)
+
+    print(doIntersect(p1, q1, p2, q2))
+
+    p1 = (0, 8)
+    q1 = (2, 1)
+    p2 = (2, 1)
+    q2 = (3, 3)
 
     print(doIntersect(p1, q1, p2, q2))
