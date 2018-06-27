@@ -1,4 +1,3 @@
-import numpy
 import random
 import networkx as nx
 
@@ -14,7 +13,7 @@ class AdjacentMatrix:
         return nx.edges(self.adjmatrix)
 
     def getSegmentsForAVertex(self,v):
-        return self.adjmatrix.edges(v)
+        return list(self.adjmatrix.edges(v))
 
     def generateMatrix(self, diagonal=False):
 
@@ -33,7 +32,7 @@ class AdjacentMatrix:
             #print("Number of edges",n)
             pos = random.randint(0,n-1)
             #print(self.adjmatrix.edges())
-            segmentToBeRemoved = self.adjmatrix.edges()[pos]
+            segmentToBeRemoved = list(self.adjmatrix.edges)[pos]
             #print("To be removed",segmentToBeRemoved)
             self.adjmatrix.remove_edges_from([segmentToBeRemoved])
 
@@ -44,6 +43,8 @@ class AdjacentMatrix:
             print("edge already removed")
     def getConnectedComponents(self):
         d = list(nx.connected_component_subgraphs(self.adjmatrix))
+        for i in d:
+            print(i.nodes,i.edges)
 
         return d
     def getNumberConnectedComponents(self):
@@ -60,5 +61,5 @@ if __name__=="__main__":
     m.removeSegments(1700)
     m.addSegment(0,3)
     cc= m.getConnectedComponents()
-    print("Número de subgrafos",len(cc),cc)
-    print(random.choice(m.getSegmentsForAVertex(0)))
+    print("Numero de subgrafos",len(cc),cc)
+    print("edges de 0",m.getSegmentsForAVertex(0))

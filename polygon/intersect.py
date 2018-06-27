@@ -99,3 +99,10 @@ if __name__=="__main__":
     q2 = (3, 3)
 
     print(doIntersect(p1, q1, p2, q2))
+
+    p1 = (0, 8)
+    q1 = (2, 1)
+    p2 = (2, 1)
+    q2 = (0, 8)
+
+    print(doIntersect(p1, q1, p2, q2))

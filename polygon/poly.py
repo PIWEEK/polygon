@@ -1,4 +1,3 @@
-import numpy
 from random import randint, sample, choice
 from copy import deepcopy
 import time
@@ -32,10 +31,10 @@ class PolygonStruct:
 
     def tryNewSegment(self):
         currentvertex = self.lov[-1]
-        #print("currentvertex",currentvertex)
+        print("currentvertex",currentvertex)
         vpos = self.lop.index(currentvertex)
         segments = self.am.getSegmentsForAVertex(vpos)
-        #print("segments",segments)
+        print("available segments",segments)
         ch = 0
         f = 0
         while ch==0:
@@ -49,6 +48,13 @@ class PolygonStruct:
     def setNewSegment(self, point):
         return point
 
+    def removepnodesegments(self, p, q):
+
+        pnode = self.lop.index(p)
+        qnode = self.lop.index(q)
+        pnodesegments = self.am.getSegmentsForAVertex(pnode)
+        self.am.adjmatrix.remove_edges_from(pnodesegments)
+        self.am.adjmatrix.add_edge(pnode,qnode)
 
 
     def removeIntersectSegments(self, p, q):
@@ -57,52 +63,46 @@ class PolygonStruct:
 
         oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
 
+        self.removepnodesegments(p,q)
+
         segments = self.am.getSegments()
+        segmentstoberemoved = []
+        for seg in segments:
+            #print("seg",seg)
+            r = self.lop[seg[0]]
+            s = self.lop[seg[1]]
 
-        pnode = self.lop.index(p)
-        qnode = self.lop.index(q)
-        self.am.removeSegment(pnode,qnode)
+            if intersect.doIntersect(p,q,r,s):
+                #print("p-q and r-s intersect",p,q,r,s)
+                segmentstoberemoved.append(seg)
+        self.am.adjmatrix.remove_edges_from(segmentstoberemoved)
+#print("number of isolated parts",self.numberofisolatedparts())
 
-        # edges_from_q = self.am.getSegmentsForAVertex(qnode)
+        # #print("lov",self.lov)
+        # #print("surviving edges",self.am.adjmatrix.edges())
+        self.lov.append(q)
 
-        if pnode==0 and len(self.lov)>2:
-            #print("INICIAMOS con p==0")
-            pnodesegments = self.am.getSegmentsForAVertex(pnode)
-            self.am.adjmatrix.remove_edges_from(pnodesegments)
-            for seg in segments:
-                r = self.lop[seg[0]]
-                s = self.lop[seg[1]]
+        for i in range(len(self.lov)-1):
+             v = self.lov[i]
+             vplus = self.lov[i+1]
+             inode = self.lop.index(v)
+             inodeplus = self.lop.index(vplus)
+             self.am.adjmatrix.add_edge(inode,inodeplus)
+        print("IP",self.numberofisolatedparts())
+        print("subgraphs")
+        self.am.getConnectedComponents()
+        print("CURRENTLOV",self.lov)
 
-                if intersect.doIntersect(p,q,r,s):
-                    #print("p-q and r-s intersect",p,q,r,s)
-                    self.am.removeSegment(seg[0],seg[1])
-
-
-        if pnode!=0:
-            #print("CONTINUAMOS con p!=0")
-
-            pnodesegments = self.am.getSegmentsForAVertex(pnode)
-            self.am.adjmatrix.remove_edges_from(pnodesegments)
-            for seg in segments:
-                r = self.lop[seg[0]]
-                s = self.lop[seg[1]]
-
-                if intersect.doIntersect(p,q,r,s):
-                    #print("p-q and r-s intersect",p,q,r,s)
-                    self.am.removeSegment(seg[0],seg[1])
-
-        #print("number of isolated parts",self.numberofisolatedparts())
-
-        #print("lov",self.lov)
-        #print("surviving edges",self.am.adjmatrix.edges())
-        if self.numberofisolatedparts() > len(self.lov): #something's wrong here
+        if self.numberofisolatedparts() > 1: #something's wrong here
             #invalid new segment
             self.am.adjmatrix = oldadjmatrix
+            self.lov.pop()
         else:
             #valid new segment
             #print("New vertex valid",q)
-            self.lov.append(q)
+            #self.lov.append(q)
             #print(q)
+            #print("trying to remove",q,self.lov,self.workingpoints)
             self.workingpoints.remove(q)
 
     def getIsolatedParts(self):
@@ -116,62 +116,69 @@ class PolygonStruct:
 if __name__ == "__main__":
 
   depth = 10
-  alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7, 8), (8,3)]
+  alist = [(0, 8), (2, 1), (3, 3), (5, 4), (8,3)]
   print("LOP",alist)
   uniquepolygons = []
-  for i in range(20):
+  for i in range(1):
     ps = PolygonStruct(alist)
     ps.setInitialVertex()
 
-    while not ps.FinalPolygonExists():
-        q = ps.tryNewSegment()
-        if q:
-            p = ps.lov[-1]
-            ps.removeIntersectSegments(p,q)
-        else:
-            break
-    # q = ps.setNewSegment((2,1))
-    # p = ps.lov[-1]
-    # ps.removeIntersectSegments(p,q)
-    # q = ps.setNewSegment((8,3))
-    # p = ps.lov[-1]
-    # ps.removeIntersectSegments(p,q)
+    # while not ps.FinalPolygonExists():
+    #     q = ps.tryNewSegment()
+    #     if q:
+    #         p = ps.lov[-1]
+    #         ps.removeIntersectSegments(p,q)
+    #     else:
+    #         break
+    q = ps.tryNewSegment()
+    p = ps.lov[-1]
+    ps.removeIntersectSegments(p,q)
+    q = ps.tryNewSegment()
+    p = ps.lov[-1]
+    ps.removeIntersectSegments(p,q)
+    q = ps.tryNewSegment()
+    p = ps.lov[-1]
+    ps.removeIntersectSegments(p,q)
+    q = ps.tryNewSegment()
+    p = ps.lov[-1]
+    ps.removeIntersectSegments(p,q)
+
     # q = ps.setNewSegment((5,4))
     # p = ps.lov[-1]
     # ps.removeIntersectSegments(p,q)
     # q = ps.setNewSegment((3,3))
     # p = ps.lov[-1]
     # ps.removeIntersectSegments(p,q)
-    ps.lov.append(ps.lov[0])
-    psreverse = ps.lov[:]
-    psreverse.reverse()
-    if len(ps.lov) == ps.size+1:
-        if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
-          print("PS.LOV",ps.lov)
-          print("PSREVERSE",psreverse)
-          print("UNIQUE",uniquepolygons)
-
-          uniquepolygons.append(ps.lov)
-          print("FINAL",ps.lov)
-          resfile = open("tests/template.gnu",'r')
-          template = resfile.read()
-          size = len(uniquepolygons)
-          dim = int(sqrt(size))
-          text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
-          template = template + text + "\n"
-
-  print("UNIQUE")
-  for p in uniquepolygons:
-        print(p)
-        ptext = "set object 1 polygon from "
-        for i in p[:-1]:
-            ptext += "%i, %i to "%(i[0],i[1])
-        ptext += "%i, %i to %i, %i fillstyle transparent"%(p[-1][0],p[-1][1],p[0][0],p[0][1])
-        template = template + ptext +"\nplot f(x) with lines ls 1\n"
-  finaltext = open("tests/finalnew.gnu","w")
-  finaltext.write(template)
-  finaltext.close()
-  system("gnuplot tests/finalnew.gnu && gwenview polygons.png 2>/dev/null")
+  #   ps.lov.append(ps.lov[0])
+  #   psreverse = ps.lov[:]
+  #   psreverse.reverse()
+  #   if len(ps.lov) == ps.size+1:
+  #       if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
+  #         print("PS.LOV",ps.lov)
+  #         print("PSREVERSE",psreverse)
+  #         print("UNIQUE",uniquepolygons)
+  #
+  #         uniquepolygons.append(ps.lov)
+  #         print("FINAL",ps.lov)
+  #         resfile = open("tests/template.gnu",'r')
+  #         template = resfile.read()
+  #         size = len(uniquepolygons)
+  #         dim = int(sqrt(size))
+  #         text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
+  #         template = template + text + "\n"
+  #
+  # print("UNIQUE")
+  # for p in uniquepolygons:
+  #       print(p)
+  #       ptext = "set object 1 polygon from "
+  #       for i in p[:-1]:
+  #           ptext += "%i, %i to "%(i[0],i[1])
+  #       ptext += "%i, %i to %i, %i fillstyle transparent"%(p[-1][0],p[-1][1],p[0][0],p[0][1])
+  #       template = template + ptext +"\nplot f(x) with lines ls 1\n"
+  # finaltext = open("tests/finalnew.gnu","w")
+  # finaltext.write(template)
+  # finaltext.close()
+  # system("gnuplot tests/finalnew.gnu && gwenview polygons.png 2>/dev/null")
 # select_random_next_point
 # create_segment
 # eliminate_intersect_segments in AdjacentMatrix
