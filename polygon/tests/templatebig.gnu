@@ -2,15 +2,15 @@
 
 reset
 
-set terminal pngcairo size 3000,2500
+set terminal pngcairo size 10000,8500
 set output 'polygons.png'
 
 set style line 1 lc rgb '#000000' lt 1 lw 4
 
 unset key
 
-set xrange [0:16]
-set yrange [0:16]
+set xrange [-15:65]
+set yrange [-15:350]
 set format y ""
 set format x ""
 f(x) = 0
