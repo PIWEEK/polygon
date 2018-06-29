@@ -5,6 +5,7 @@ import disjoint
 import intersect
 from math import sqrt
 from os import system
+from collections import Counter
 
 
 
@@ -44,6 +45,7 @@ class PolygonStruct:
             s = lovtest[i+1]
             if intersect.doIntersect(p,q,r,s):
                 return False
+
         return True
 
     def tryNewSegment(self):
@@ -74,6 +76,10 @@ class PolygonStruct:
 
     def setNewSegment(self, point):
         print("new vertex to try",point)
+        vpos = self.lop.index(point)
+        vprev = self.lop.index(self.lov[-1])
+        self.am.removeSegment(vpos,vprev) #to avoid going back
+
 
         return point
 
@@ -99,27 +105,31 @@ class PolygonStruct:
 
     def checkoneneighbornodes(self):
 
-        isolated = self.getIsolatedParts()
-        if len(isolated) > 1:
-            pgraph = isolated[1]
-            for i in isolated:
-                try:
-                    i.neighbors(0)
-                except:
-                    pgraph = i
-
-            numberofoneneighbornodes = 0
-            for n in pgraph.nodes:
-                if len(list(pgraph.neighbors(n))) == 1:
-                    print("NODO AISLADO",n)
-                    numberofoneneighbornodes +=1
-            if numberofoneneighbornodes > 1:
-                self.am.adjmatrix = self.oldadjmatrix
-                self.lov.pop()
-                print("AISLADO")
-                return False
+        print("ULTIMO NODO SUMADO",self.lov[-1])
+        if self.am.getNumberConnectedComponents()>1:
+            graph = self.getIsolatedParts()[1]
+            edges = graph.edges
+            nodesA = [i[0] for i in edges]
+            nodesB = [i[1] for i in edges]
+            j=Counter(nodesA+nodesB)
+            print("NODOS UNIDOS",j)
+        else:
+            print("solo un grafo")
             return True
+
+
+
+        total = 0
+
+        for k,v in j.items():
+            if v==1: total+=1
+        if total > 1:
+            print("ONENEIGHBORNODE FOUND!")
+            self.am.adjmatrix = self.oldadjmatrix
+            self.lov.pop()
+            return False
         return True
+
 
     def checkisolatedgraphs(self, maxnumber):
 
@@ -127,6 +137,22 @@ class PolygonStruct:
             self.am.adjmatrix = self.oldadjmatrix
             self.lov.pop()
             return False
+        return True
+
+    def selfintersect(self):
+        lovsize = range(len(self.lov)-1)
+        for i in lovsize:
+            p = self.lov[i]
+            q = self.lov[i+1]
+            for j in lovsize:
+                r = self.lov[j]
+                s = self.lov[j+1]
+                if intersect.doIntersect(p,q,r,s):
+                    self.am.adjmatrix = self.oldadjmatrix
+                    self.lov.pop()
+                    print("SELFINTERSECT")
+                    time.sleep(1)
+                    return False
         return True
 
     def removeIntersectSegments(self, p, q):
@@ -162,6 +188,7 @@ class PolygonStruct:
         self.am.getConnectedComponents()
 #        if self.checkoneneighbornodes():
         self.checkisolatedgraphs(2)
+        #self.selfintersect()
         print("CURRENTLOV",self.lov)
         self.addnodesegments(qnodesegments)
         print("IP",self.numberofisolatedparts())

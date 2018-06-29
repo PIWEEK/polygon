@@ -8,18 +8,23 @@ uniquepolygons = []
 ps = poly.PolygonStruct(alist)
 ps.setInitialVertex()
 q = ps.setNewSegment((40,99))
+ps.checkoneneighbornodes()
 p = ps.lov[-1]
 ps.removeIntersectSegments(p,q)
 q = ps.setNewSegment((21,7))
+ps.checkoneneighbornodes()
 p = ps.lov[-1]
 ps.removeIntersectSegments(p,q)
 q = ps.setNewSegment((15,9))
+ps.checkoneneighbornodes()
 p = ps.lov[-1]
 ps.removeIntersectSegments(p,q)
 q = ps.setNewSegment((7,10))
+ps.checkoneneighbornodes()
 p = ps.lov[-1]
 ps.removeIntersectSegments(p,q)
 q = ps.setNewSegment((42,2))
+ps.checkoneneighbornodes()
 p = ps.lov[-1]
 ps.removeIntersectSegments(p,q)
 ps.removeIntersectSegments(p,q)
