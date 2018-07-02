@@ -40,13 +40,13 @@ class AdjacentMatrix:
         try:
             self.adjmatrix.remove_edge(p,q)
         except:
-            print("edge already removed")
+            pass
+            #print("edge already removed")
+
     def getConnectedComponents(self):
         d = list(nx.connected_component_subgraphs(self.adjmatrix))
-        for i in d:
-            print(i.nodes,i.edges)
-
         return d
+
     def getNumberConnectedComponents(self):
         d = list(nx.connected_component_subgraphs(self.adjmatrix))
 

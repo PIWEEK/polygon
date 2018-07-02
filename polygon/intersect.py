@@ -55,23 +55,23 @@ def doIntersect(p1, q1, p2, q2):
         return True
 
     if (o1 == 0 and onSegment(p1, p2, q1)):
-        print("I 1")
-        print("->",p1,p2,q1)
+#        print("I 1")
+#        print("->",p1,p2,q1)
         return True
 
     if (o2 == 0 and onSegment(p1, q2, q1)):
-        print("I 2")
-        print("->",p1,q2,q1)
+#        print("I 2")
+#        print("->",p1,q2,q1)
         return True
 
     if (o3 == 0 and onSegment(p2, p1, q2)):
-        print("I 3")
-        print("->",p2,p1,q2)
+#        print("I 3")
+#        print("->",p2,p1,q2)
         return True
 
     if (o4 == 0 and onSegment(p2, q1, q2)):
-        print("I 4")
-        print("->",p2,q1,q2)
+#        print("I 4")
+#        print("->",p2,q1,q2)
         return True
 
     #print("PASS")

@@ -15,10 +15,12 @@ def perimeter(polygon):
 
 alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7,8), (8,3)]
 alist = [(1, 8), (2, 3), (4, 1), (5, 1), (6, 1),(6,5),(7,3),(9,6), (10,15), (14,7)]
-#alist = [(7,10),(40,99),(31,28),(15,9),(31,120),(64,315),(42,2),(5,17),(21,7)]
+alist = [(7,10),(40,99),(31,28),(15,9),(31,120),(64,315),(42,2),(5,17),(21,7)]
 #alist = [(7,10),(40,99),(31,28),(15,13),(31,120),(64,315),(42,2),(5,17),(21,11)]
 #alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55)]
-alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40),(75,110),(45,75),(110,75)]
+#alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40),(75,110),(45,75),(110,75)]
+#alist = [(83,283),(200,283),(283,200),(283,83),(200,0),(83,0),(0,83),(0,200),(62,175),(97,186),(108,223),(142,205),(175,223),(186,186),(223,175),(205,142),(223,108),(97,186),(175,62),(142,79),(108,62),(97,97),(62,108),(79,142)]
+#alist = [(1, 1), (2, 1), (3, 1), (3, 3)]
 print("LOP",alist)
 uniquepolygons = []
 # ps = PolygonStruct(alist)
@@ -31,14 +33,14 @@ uniquepolygons = []
 # ps.removeIntersectSegments(p,q)
 
 t=0
-cycles = 30000
+cycles = 3000
 for i in range(cycles):
     c=0
     t+=1
 
     if t%500==0:
-        print("CYCLE NUMBER and NUMBER OF POLYGONS SO FAR",t,len(uniquepolygons))
-        time.sleep(1)
+        print("############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",t,len(uniquepolygons))
+        time.sleep(2)
 
     ps = poly.PolygonStruct(alist)
     ps.setInitialVertex()
@@ -64,7 +66,7 @@ for i in range(cycles):
             if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
 
                 uniquepolygons.append(ps.lov)
-resfile = open("tests/templatehighres.gnu",'r')
+resfile = open("tests/templatebig.gnu",'r')
 template = resfile.read()
 size = len(uniquepolygons)
 dim = int(sqrt(size))
@@ -78,13 +80,13 @@ for p in uniquepolygons:
     pos+=1
     peri = perimeter(p)
     p.append(peri)
-    print("P AND PERIMETER---------------->",p,peri)
+#    print("P AND PERIMETER---------------->",p,peri)
     if peri<minperimeter:
         minperimeter=peri
         posper = pos
 
 apos = 0
-print("POSPER",posper,minperimeter)
+#print("POSPER",posper,minperimeter)
 for p in uniquepolygons:
     apos +=1
     ptext = "set object 1 polygon from "
@@ -102,5 +104,5 @@ finaltext = open("tests/finalnew.gnu","w")
 finaltext.write(template)
 finaltext.close()
 system("gnuplot tests/finalnew.gnu && gwenview polygons.png 2>/dev/null")
-print("UNIQUE POLYGONS",uniquepolygons)
+#print("UNIQUE POLYGONS",uniquepolygons)
 print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))

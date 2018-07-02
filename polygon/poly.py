@@ -24,7 +24,8 @@ class PolygonStruct:
     def setInitialVertex(self):
         self.lov.append(self.lop[0])
         #self.workingpoints.pop(0)
-        print("Initial vertex",self.lov)
+        #print("Initial vertex",self.lov)
+        print(".",end='',flush=True)
 
     def FinalPolygonExists(self):
         if len(self.lov) == len(self.lop):
@@ -38,8 +39,8 @@ class PolygonStruct:
         q = lovtest[-1]
         #print("...",p,q)
 
-        print("LOV",lovtest)
-        print("SIZE",self.size)
+        #print("LOV",lovtest)
+        #print("SIZE",self.size)
         for i in range(self.size):
             r = lovtest[i]
             s = lovtest[i+1]
@@ -49,33 +50,36 @@ class PolygonStruct:
         return True
 
     def tryNewSegment(self):
-        if len(self.lov) == 1:
+        try:
+         if len(self.lov) == 1:
             currentvertex = self.lov[-1]
-            print("current vertex",currentvertex)
+            #print("current vertex",currentvertex)
             vpos = self.lop.index(currentvertex)
             segments = self.am.getSegmentsForAVertex(vpos)
-            print("available segments",segments)
+            #print("available segments",segments)
             ch = choice(segments)[1]
             s = self.lop[ch]
             #print("choice",ch,s)
-            print("new vertex to try",s)
+            #print("new vertex to try",s)
             return s
-        currentvertex = self.lov[-1]
-        previousvertex = self.lov[-2]
-        print("current vertex",currentvertex)
-        vpos = self.lop.index(currentvertex)
-        vprev = self.lop.index(previousvertex)
-        self.am.removeSegment(vpos,vprev) #to avoid going back
-        segments = self.am.getSegmentsForAVertex(vpos)
-        print("available segments",segments)
-        ch = choice(segments)[1]
-        s = self.lop[ch]
-        #print("choice",ch,s)
-        print("new vertex to try",s)
-        return s
+         currentvertex = self.lov[-1]
+         previousvertex = self.lov[-2]
+         print("current vertex",currentvertex)
+         vpos = self.lop.index(currentvertex)
+         vprev = self.lop.index(previousvertex)
+         self.am.removeSegment(vpos,vprev) #to avoid going back
+         segments = self.am.getSegmentsForAVertex(vpos)
+         print("available segments",segments)
+         ch = choice(segments)[1]
+         s = self.lop[ch]
+         #print("choice",ch,s)
+         print("new vertex to try",s)
+         return s
+        except:
+            return None
 
     def setNewSegment(self, point):
-        print("new vertex to try",point)
+        #print("new vertex to try",point)
         vpos = self.lop.index(point)
         vprev = self.lop.index(self.lov[-1])
         self.am.removeSegment(vpos,vprev) #to avoid going back
@@ -105,16 +109,16 @@ class PolygonStruct:
 
     def checkoneneighbornodes(self):
 
-        print("ULTIMO NODO SUMADO",self.lov[-1])
+        #print("ULTIMO NODO SUMADO",self.lov[-1])
         if self.am.getNumberConnectedComponents()>1:
             graph = self.getIsolatedParts()[1]
             edges = graph.edges
             nodesA = [i[0] for i in edges]
             nodesB = [i[1] for i in edges]
             j=Counter(nodesA+nodesB)
-            print("NODOS UNIDOS",j)
+            #print("NODOS UNIDOS",j)
         else:
-            print("solo un grafo")
+            #print("solo un grafo")
             return True
 
 
@@ -124,7 +128,7 @@ class PolygonStruct:
         for k,v in j.items():
             if v==1: total+=1
         if total > 1:
-            print("ONENEIGHBORNODE FOUND!")
+            #print("ONENEIGHBORNODE FOUND!")
             self.am.adjmatrix = self.oldadjmatrix
             self.lov.pop()
             return False
@@ -150,7 +154,7 @@ class PolygonStruct:
                 if intersect.doIntersect(p,q,r,s):
                     self.am.adjmatrix = self.oldadjmatrix
                     self.lov.pop()
-                    print("SELFINTERSECT")
+                    #print("SELFINTERSECT")
                     time.sleep(1)
                     return False
         return True
@@ -168,7 +172,7 @@ class PolygonStruct:
 
         if self.checkisolatedgraphs(2):
 #         if self.checkoneneighbornodes():
-            print("removing segments")
+            #print("removing segments")
             segments = self.am.getSegments()
             segmentstoberemoved = []
             for seg in segments:
@@ -177,22 +181,22 @@ class PolygonStruct:
                 s = self.lop[seg[1]]
 
                 if intersect.doIntersect(p,q,r,s):
-                    print("p-q and r-s intersect",p,q,r,s)
+                    #print("p-q and r-s intersect",p,q,r,s)
                     segmentstoberemoved.append(seg)
             self.am.adjmatrix.remove_edges_from(segmentstoberemoved)
 
 
 
-        print("IP",self.numberofisolatedparts())
-        print("subgraphs")
+        #print("IP",self.numberofisolatedparts())
+        #print("subgraphs")
         self.am.getConnectedComponents()
 #        if self.checkoneneighbornodes():
         self.checkisolatedgraphs(2)
         #self.selfintersect()
         print("CURRENTLOV",self.lov)
         self.addnodesegments(qnodesegments)
-        print("IP",self.numberofisolatedparts())
-        print("subgraphs")
+        #print("IP",self.numberofisolatedparts())
+        #print("subgraphs")
         self.am.getConnectedComponents()
 
     def getIsolatedParts(self):
