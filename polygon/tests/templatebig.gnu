@@ -9,8 +9,8 @@ set style line 1 lc rgb '#000000' lt 1 lw 4
 
 unset key
 
-set xrange [-1:50]
-set yrange [-1:400]
+set xrange [40:120]
+set yrange [40:120]
 set format y ""
 set format x ""
 f(x) = 0

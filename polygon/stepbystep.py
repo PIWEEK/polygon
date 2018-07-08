@@ -3,34 +3,24 @@ from math import sqrt
 from os import system
 
 alist = [(5,17),(40,99),(31,28),(15,9),(31,120),(64,315),(42,2),(7,10),(21,7)]
+alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40)]
+
 print("LOP",alist)
 uniquepolygons = []
 ps = poly.PolygonStruct(alist)
 ps.setInitialVertex()
-q = ps.setNewSegment((40,99))
-ps.checkoneneighbornodes()
-p = ps.lov[-1]
-ps.removeIntersectSegments(p,q)
-q = ps.setNewSegment((21,7))
-ps.checkoneneighbornodes()
-p = ps.lov[-1]
-ps.removeIntersectSegments(p,q)
-q = ps.setNewSegment((15,9))
-ps.checkoneneighbornodes()
-p = ps.lov[-1]
-ps.removeIntersectSegments(p,q)
-q = ps.setNewSegment((7,10))
-ps.checkoneneighbornodes()
-p = ps.lov[-1]
-ps.removeIntersectSegments(p,q)
-q = ps.setNewSegment((42,2))
-ps.checkoneneighbornodes()
-p = ps.lov[-1]
-ps.removeIntersectSegments(p,q)
-ps.removeIntersectSegments(p,q)
-q = ps.setNewSegment((42,2))
-ps.checkoneneighbornodes()
+ps.forcedCycle((75,55))
+ps.forcedCycle((50,100))
+ps.forcedCycle((85,75))
+ps.forcedCycle((75,95))
 
+print("segments",ps.am.getSegments())
+
+# temp = [(50, 100),(75,95),(75,55),(85,75)]
+#
+# print("rebuilding with",temp)
+# ps.rebuildTemporaryPolygon(temp)
+# print("segments",ps.am.getSegments())
 
 uniquepolygons.append(ps.lov)
 print("FINAL",ps.lov)
