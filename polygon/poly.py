@@ -13,6 +13,7 @@ class PolygonStruct:
 
     def __init__(self, listofpoints):
         listofpoints.sort()
+        self.listofpoints = listofpoints
 
         self.initialvertex = listofpoints[0]
         self.lop = {val:{"i":listofpoints.index(val),"v":val} for val in listofpoints}
@@ -30,6 +31,22 @@ class PolygonStruct:
 
         self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0}
 
+    def traceback(self):
+        print("---------------------------")
+        print("LOP",self.lop.keys())
+        print("am",self.am)
+        print("isolatedparts",self.getIsolatedParts())
+        print("isolatedparts",self.getIsolatedPartsAsListsOfPoints())
+        print("LEN isolatedparts",len(self.getIsolatedPartsAsListsOfPoints()[0]))
+
+        print("firstnodesegments",self.firstnodesegments)
+        print("qnodesegments",self.qnodesegments)
+        print("nvnodesegments",self.nvnodesegments)
+        print("checkIsolatedGraphs",self.checkIsolatedGraphs())
+        print("unreachable",self.checkUnreachableOneNeighborNodes())
+        print("threeone",self.checkThreeOneNeighborNodes())
+
+        print("---------------------------")
 
     def setInitialVertex(self):
 
@@ -119,12 +136,12 @@ class PolygonStruct:
              inodeplus = self.lop[vplus]["i"]
              self.am.adjmatrix.add_edge(inode,inodeplus)
 
-    def removenodesegments(self, q):
+    def removenodesegments(self, v):
 
-        qnode = self.lop[q]["i"]
-        qnodesegments = self.am.getSegmentsForAVertex(qnode)
-        self.am.adjmatrix.remove_edges_from(qnodesegments)
-        return qnodesegments
+        vnode = self.lop[v]["i"]
+        vnodesegments = self.am.getSegmentsForAVertex(vnode)
+        self.am.adjmatrix.remove_edges_from(vnodesegments)
+        return vnodesegments
 
     def addnodesegments(self, segments):
 
@@ -169,6 +186,7 @@ class PolygonStruct:
     def checkIsolatedGraphs(self, maxnumber=2):
 
         if self.numberofisolatedparts() > maxnumber: #something's wrong here
+            #print("max number of isolated parts exceeded",self.numberofisolatedparts())
             return False
         return True
 
@@ -189,11 +207,17 @@ class PolygonStruct:
         return True
 
     def undoLastVertex(self):
+
         self.lov.pop()
         self.am.adjmatrix = self.oldadjmatrix
         self.addnodesegments(self.firstnodesegments)
         self.addnodesegments(self.qnodesegments)
         self.addnodesegments(self.nvnodesegments)
+        if len(self.lov) == 1:
+            self.firstnodesegments = []
+            self.nvnodesegments = []
+
+            #print("undoLastVertex",self.getIsolatedParts())
 
 
     #def checkTwoOneNeighborNodesAreReachable(self):
@@ -250,10 +274,10 @@ class PolygonStruct:
         return True
 
     def forcedCycle(self,point):
-        self.cycle(point)
+        self.cycle(point, verbose=True)
 
 
-    def cycle(self, point=None):
+    def cycle(self, point=None, verbose=False):
 
         if not point:
             nv = self.tryNewVertex()
@@ -275,6 +299,10 @@ class PolygonStruct:
         self.removeIntersectSegments(q,nv)
         #print("isolated parts",self.numberofisolatedparts())
         #print("segmentos tras sumar",nv,self.getIsolatedPartsAsListsOfPoints())
+        if verbose:
+            print("isolated parts",self.getIsolatedPartsAsListsOfPoints())
+            print("number of isolated parts",self.numberofisolatedparts())
+
 
         if self.checkIsolatedGraphs():
             if self.checkUnreachableOneNeighborNodes():
@@ -291,6 +319,7 @@ class PolygonStruct:
                 self.cycleinfo["threeone"] +=1
                 self.undoLastVertex()
         else:
+            #print(self.traceback())
             self.cycleinfo["subgraphs"] +=1
             self.undoLastVertex()
 

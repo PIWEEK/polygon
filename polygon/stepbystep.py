@@ -9,11 +9,9 @@ print("LOP",alist)
 uniquepolygons = []
 ps = poly.PolygonStruct(alist)
 ps.setInitialVertex()
-ps.forcedCycle((75,55))
-ps.forcedCycle((50,100))
-ps.forcedCycle((85,75))
-ps.forcedCycle((75,95))
-
+ps.traceback()
+ps.forcedCycle((100,50))
+ps.traceback()
 print("segments",ps.am.getSegments())
 
 # temp = [(50, 100),(75,95),(75,55),(85,75)]
