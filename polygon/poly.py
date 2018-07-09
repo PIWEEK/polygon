@@ -28,6 +28,8 @@ class PolygonStruct:
         self.nvnodesegments = []
         self.qnodesegments = []
 
+        self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0}
+
 
     def setInitialVertex(self):
 
@@ -228,7 +230,7 @@ class PolygonStruct:
                     nIntersects[n]["q"] = True
                     qIntersect = True
         if len(oneNeighborNodes) == 1:
-            if pIntersect or qIntersect:
+            if pIntersect and qIntersect:
                 #print("Intersectamos con ambos")
                 return False
         #print("nIntersects",nIntersects)
@@ -236,15 +238,15 @@ class PolygonStruct:
             for n in nIntersects:
                 if nIntersects[n]["p"] and nIntersects[n]["q"]:
                     return False
-            # pIsolated = True
-            # qIsolated = True
-            # for n in nIntersects:
-            #     if not nIntersects[n]["p"]:
-            #         pIsolated = False
-            #     if not nIntersects[n]["q"]:
-            #         qIsolated = False
-            # if not pIsolated or not qIsolated:
-            #     return False
+            pIsolated = True
+            qIsolated = True
+            for n in nIntersects:
+                if not nIntersects[n]["p"]:
+                    pIsolated = False
+                if not nIntersects[n]["q"]:
+                    qIsolated = False
+            if pIsolated or qIsolated:
+                return False
         return True
 
     def forcedCycle(self,point):
@@ -283,10 +285,13 @@ class PolygonStruct:
                     #print("isolated parts tras restaurar",self.numberofisolatedparts())
                     #print("segmentos tras restaurar",nv,self.getIsolatedPartsAsListsOfPoints())
                 else:
+                    self.cycleinfo["unreachable"] +=1
                     self.undoLastVertex()
             else:
+                self.cycleinfo["threeone"] +=1
                 self.undoLastVertex()
         else:
+            self.cycleinfo["subgraphs"] +=1
             self.undoLastVertex()
 
 
