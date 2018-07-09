@@ -4,15 +4,16 @@ from os import system
 
 alist = [(5,17),(40,99),(31,28),(15,9),(31,120),(64,315),(42,2),(7,10),(21,7)]
 alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40)]
+alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75),  (65,75), (75,40)]
 
 print("LOP",alist)
 uniquepolygons = []
 ps = poly.PolygonStruct(alist)
 ps.setInitialVertex()
-ps.traceback()
+
 ps.forcedCycle((100,50))
-ps.traceback()
-print("segments",ps.am.getSegments())
+
+#print("segments",ps.am.getSegments())
 
 # temp = [(50, 100),(75,95),(75,55),(85,75)]
 #
