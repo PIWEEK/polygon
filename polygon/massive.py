@@ -1,8 +1,9 @@
 import poly
+import sys
 from math import sqrt
 from os import system
 import time
-
+import itertools
 
 def perimeter(polygon):
 
@@ -16,15 +17,15 @@ def perimeter(polygon):
 alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7,8), (8,3)]
 alist = [(1, 8), (2, 3), (4, 1), (5, 1), (6, 1),(6,5),(7,3),(9,6), (10,15), (14,7)]
 alist = [(7,10),(40,99),(31,28),(15,9),(31,120),(64,315),(42,2),(5,17),(21,7)]
-#alist = [(7,10),(40,99),(31,28),(15,13),(31,120),(64,315),(42,2),(5,17),(21,11)]
-alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (65,75), (75,55)]
+alist = [(7,10),(40,99),(31,28),(15,13),(31,120),(64,315),(42,2),(5,17),(21,11)]
+#alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (65,75), (75,55)]
 #alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40)]
 #alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40),(75,110),(45,75),(110,75)]
 #alist = [(83,283),(200,283),(283,200),(283,83),(200,0),(83,0),(0,83),(0,200),(62,175),(97,186),(108,223),(142,205),(175,223),(186,186),(223,175),(205,142),(223,108),(175,62),(142,79),(108,62),(97,97),(62,108),(79,142)]
 #alist = [(1, 1), (2, 1), (3, 1), (3, 3)]
 
-alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75),  (65,75), (75,40)]
-#alist = [(83,283),(200,283),(283,200),(283,83),(200,0),(83,0),(0,83),(0,200),(62,175),(97,186),(108,223),(142,205),(175,223),(186,186),(223,175),(205,142),(223,108),(175,62),(142,79),(108,62),(97,97),(62,108),(79,142)]
+#alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75),  (65,75), (75,40)]
+alist = [(83,283),(200,283),(283,200),(283,83),(200,0),(83,0),(0,83),(0,200),(62,175),(97,186),(108,223),(142,205),(175,223),(186,186),(223,175),(205,142),(223,108),(175,62),(142,79),(108,62),(97,97),(62,108),(79,142)]
 
 
 print("LOP",alist)
@@ -48,10 +49,13 @@ uniquepolygons = []
 # ps.removeIntersectSegments(p,q)
 
 t=0
-cycles = 1000
+try:
+    cycles = int(sys.argv[1])
+except:
+    cycles = 1000
 cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "stuck":0, "polstuck":[]}
 for i in range(cycles):
-    #print(".",end='',flush=True)
+    print(".",end='',flush=True)
     c=0
     t+=1
 
@@ -69,7 +73,7 @@ for i in range(cycles):
         else:
             c=0
             oldq = ps.lov[-1]
-        if c> 50:
+        if c> 10:
             cycleinfo["stuck"] +=1
             cycleinfo["polstuck"].append(ps.lov)
             c=0
@@ -90,13 +94,15 @@ for i in range(cycles):
             if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
 
                 uniquepolygons.append(ps.lov)
-                print("FINAL VALID POLYGON ",ps.lov)
-resfile = open("tests/templatenorange.gnu",'r')
+                #print("FINAL VALID POLYGON ",ps.lov)
+resfile = open("tests/templatenorangesvg.gnu",'r')
 template = resfile.read()
 size = len(uniquepolygons)
 dim = int(sqrt(size))
 text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
 template = template + text + "\n"
+
+
 
 minperimeter = float(100000)
 pos = 0
@@ -132,7 +138,10 @@ for p in uniquepolygons:
 finaltext = open("tests/finalnew.gnu","w")
 finaltext.write(template)
 finaltext.close()
-system("gnuplot tests/finalnew.gnu && gwenview polygons.png 2>/dev/null")
+system("gnuplot tests/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
 #print("UNIQUE POLYGONS",uniquepolygons)
 print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
+cycleinfo["polstuck"].sort()
+cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
 print("CYCLE INFO",cycleinfo)
+print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
