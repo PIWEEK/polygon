@@ -55,3 +55,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# polygon specific files
+final.gnu
+polygons.svg
+.vscode

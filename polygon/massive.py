@@ -95,7 +95,7 @@ for i in range(cycles):
 
                 uniquepolygons.append(ps.lov)
                 #print("FINAL VALID POLYGON ",ps.lov)
-resfile = open("tests/templatenorangesvg.gnu",'r')
+resfile = open("templates/templatenorangesvg.gnu",'r')
 template = resfile.read()
 size = len(uniquepolygons)
 dim = int(sqrt(size))
@@ -135,10 +135,10 @@ for p in uniquepolygons:
         ptext += "%i, %i to %i, %i fillstyle transparent solid 0.1"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
 
     template = template + xrangetext + yrangetext + ptext +"\nplot f(x) with lines ls 1\n"
-finaltext = open("tests/finalnew.gnu","w")
+finaltext = open("templates/finalnew.gnu","w")
 finaltext.write(template)
 finaltext.close()
-system("gnuplot tests/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
+system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
 #print("UNIQUE POLYGONS",uniquepolygons)
 print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 cycleinfo["polstuck"].sort()

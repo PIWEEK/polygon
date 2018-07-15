@@ -23,7 +23,7 @@ ps.forcedCycle((100,50))
 
 uniquepolygons.append(ps.lov)
 print("FINAL",ps.lov)
-resfile = open("tests/templatebig.gnu",'r')
+resfile = open("templates/templatebig.gnu",'r')
 template = resfile.read()
 size = len(uniquepolygons)
 dim = int(sqrt(size))
@@ -38,7 +38,7 @@ for p in uniquepolygons:
         ptext += "%i, %i to "%(i[0],i[1])
     ptext += "%i, %i to %i, %i fillstyle transparent"%(p[-1][0],p[-1][1],p[0][0],p[0][1])
     template = template + ptext +"\nplot f(x) with lines ls 1\n"
-finaltext = open("tests/finalnew.gnu","w")
+finaltext = open("templates/finalnew.gnu","w")
 finaltext.write(template)
 finaltext.close()
 #system("gnuplot tests/finalnew.gnu && gwenview polygons.png 2>/dev/null")
