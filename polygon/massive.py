@@ -1,4 +1,4 @@
-import poly
+import polygon
 import sys
 from math import sqrt
 from os import system
@@ -63,7 +63,7 @@ for i in range(cycles):
         print("\n############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",t,len(uniquepolygons))
         time.sleep(2)
 
-    ps = poly.PolygonStruct(alist)
+    ps = polygon.PolygonStruct(alist)
     ps.setInitialVertex()
     oldq = (-1,-1)
     while not ps.allPointsUsed():

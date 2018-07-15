@@ -29,19 +29,16 @@ class AdjacentMatrix:
     def removeSegments(self, numofsegments):
         for i in range(numofsegments):
             n = nx.number_of_edges(self.adjmatrix)
-            #print("Number of edges",n)
             pos = random.randint(0,n-1)
-            #print(self.adjmatrix.edges())
             segmentToBeRemoved = list(self.adjmatrix.edges)[pos]
-            #print("To be removed",segmentToBeRemoved)
             self.adjmatrix.remove_edges_from([segmentToBeRemoved])
 
     def removeSegment(self, p, q):
         try:
             self.adjmatrix.remove_edge(p,q)
         except:
-            pass
-            #print("edge already removed")
+            pass #edge already removed
+
 
     def getConnectedComponents(self):
         d = list(nx.connected_component_subgraphs(self.adjmatrix))
@@ -61,5 +58,5 @@ if __name__=="__main__":
     m.removeSegments(1700)
     m.addSegment(0,3)
     cc= m.getConnectedComponents()
-    print("Numero de subgrafos",len(cc),cc)
-    print("edges de 0",m.getSegmentsForAVertex(0))
+    print("Number of subgraphs",len(cc),cc)
+    print("Edges for node 0",m.getSegmentsForAVertex(0))

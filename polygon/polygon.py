@@ -1,12 +1,11 @@
-from random import randint, sample, choice
-from copy import deepcopy
 import time
-import disjoint
+import adjmatrix
 import intersect
 from math import sqrt
 from os import system
 from collections import Counter
-
+from copy import deepcopy
+from random import randint, sample, choice
 
 
 class PolygonStruct:
@@ -22,7 +21,7 @@ class PolygonStruct:
         self.size = len(listofpoints)
         self.lov = []
 
-        self.am = disjoint.AdjacentMatrix(listofpoints)
+        self.am = adjmatrix.AdjacentMatrix(listofpoints)
         self.oldadjmatrix = deepcopy(self.am.adjmatrix)
         self.lastnodesegments = []
         self.firstnodesegments = []
@@ -35,7 +34,7 @@ class PolygonStruct:
 
         self.lov = []
         self.setInitialVertex()
-        self.am = disjoint.AdjacentMatrix(self.listofpoints)
+        self.am = adjmatrix.AdjacentMatrix(self.listofpoints)
         self.oldadjmatrix = deepcopy(self.am.adjmatrix)
         self.lastnodesegments = []
         self.firstnodesegments = []
@@ -74,7 +73,7 @@ class PolygonStruct:
         self.lov = []
         listofpoints = list(self.lop.keys())
         listofpoints.sort()
-        self.am = disjoint.AdjacentMatrix(listofpoints)
+        self.am = adjmatrix.AdjacentMatrix(listofpoints)
         self.oldadjmatrix = deepcopy(self.am.adjmatrix)
         self.setInitialVertex()
         for v in listofvertex:

@@ -5,11 +5,16 @@ reset
 set terminal svg size 100000,100000 dynamic
 set output 'polygons.svg'
 
-set style line 0.2 lc rgb '#000000' lt 0 lw 0
+set style line 1 lc rgb '#000000' lt 0 lw 0
 
 unset key
-unset border
+set border 2 
 unset tics
+
+set tmargin 4
+set bmargin 4
+set rmargin 4
+set lmargin 4
 
 set format y ""
 set format x ""
