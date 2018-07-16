@@ -4,7 +4,8 @@ from math import sqrt
 from os import system
 import time
 import itertools
-import goldenspiral
+import hashlib
+import goldenspiral, spiral
 
 def perimeter(polygon):
 
@@ -16,8 +17,35 @@ def perimeter(polygon):
     return p
 
 
+def comparewithsavedfile(uniquepolygons):
+    m = hashlib.sha256()
+    uniquepolygons.sort()
+    uniquepolygonsbytestring = str(uniquepolygons).encode()
+    m.update(uniquepolygonsbytestring)
+    filename = m.hexdigest()
+    try:
+        f = eval(open(filename,'r').read())
+        if f[:] == uniquepolygons[:]:
+            print("\nTEST OK",filename)
+            return True
+        else:
+            print("\nTEST ERROR (different content) for",filename)
+            return False
+    except:
+        print("\nTEST ERROR (different hash) for",filename)
+        return False
 
-
+def savefile(uniquepolygons):
+    m = hashlib.sha256()
+    uniquepolygons.sort()
+    uniquepolygonsbytestring = str(uniquepolygons).encode()
+    m.update(uniquepolygonsbytestring)
+    filename = m.hexdigest()
+    f = open(filename,'w')
+    f.write(str(uniquepolygons))
+    f.write("\n")
+    f.close()
+    
 uniquepolygons = []
 
 
@@ -30,10 +58,40 @@ except:
 try:
     steps = int(sys.argv[2])
 except:
-    steps = 10
+    steps = 2
 
-g = goldenspiral.GoldenSpiral()
-alist = g.generate(steps=steps)
+try:
+    alist = [(int(l.split()[0]),int(l.split()[1])) for l in open(sys.argv[3],'r').readlines()]
+except:
+    alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7,8), (8,3)]
+
+save = False
+compare = False
+try:
+    command = sys.argv[4]
+    if command == "save":
+        save = True
+    elif command == "compare":
+        compare = True
+
+except:
+    pass
+
+show = False
+try:
+    output = sys.argv[5]
+    if output == "visual":
+        show = True
+
+except:
+    pass
+
+
+# g = goldenspiral.GoldenSpiral()
+# alist = g.generate(steps=steps)
+# alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40),(75,110),(45,75),(110,75)]
+# g = spiral.Spiral(xzero=1,yzero=1)
+# alist = list(set(g.generate(steps=steps)))
 
 print("LOP",alist)
 xValues = [i[0] for i in alist]
@@ -85,10 +143,19 @@ for i in range(cycles):
         psreverse.reverse()
         if len(ps.lov) == ps.size+1:
             if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
-
-                uniquepolygons.append(ps.lov)
+                if ps.lov < psreverse:
+                    uniquepolygons.append(ps.lov)
+                else:
+                    uniquepolygons.append(psreverse)
                 print("*",end='',flush=True)
                 #print("FINAL VALID POLYGON ",ps.lov)
+
+if save:
+    savefile(uniquepolygons)
+if compare:
+    comparewithsavedfile(uniquepolygons)
+
+
 resfile = open("templates/templatenorangesvg.gnu",'r')
 template = resfile.read()
 size = len(uniquepolygons)
@@ -116,6 +183,7 @@ yrangetext = "\nset yrange [%i:%i]\n"%(minY,maxY)
 
 print("MIN PERIMETER",minperimeter)
 #print("POSPER",posper,minperimeter)
+ 
 for p in uniquepolygons:
     apos +=1
     ptext = "set object 1 polygon from "
@@ -123,19 +191,21 @@ for p in uniquepolygons:
         ptext += "%i, %i to "%(i[0],i[1])
 
     if p[-1]==minperimeter:
-        ptext += "%i, %i to %i, %i fillstyle transparent solid 0.8"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
+        ptext += "%i, %i to %i, %i fillstyle transparent solid 0.9"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
 
     else:
-        ptext += "%i, %i to %i, %i fillstyle transparent solid 0.1"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
+        ptext += "%i, %i to %i, %i fillstyle transparent solid 0.3"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
 
     template = template + xrangetext + yrangetext + ptext +"\nplot f(x) with lines ls 1\n"
 finaltext = open("templates/finalnew.gnu","w")
 finaltext.write(template)
 finaltext.close()
-system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
+if show:
+    system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
 #print("UNIQUE POLYGONS",uniquepolygons)
 print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 cycleinfo["polstuck"].sort()
 cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
+cycleinfo["polstuck"] = []
 print("CYCLE INFO",cycleinfo)
 print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
