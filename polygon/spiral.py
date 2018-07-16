@@ -7,6 +7,7 @@ class Spiral:
         self.xzero = xzero
         self.yzero = yzero
 
+
     def generate(self, xdelta=1, ydelta=1, size=10, steps=10):
 
         pointA = (self.xzero,self.yzero)
@@ -51,6 +52,8 @@ class Spiral:
             rectpoints += pointCderivatives
             rectpoints += pointDderivatives
 
+            return rectpoints[:steps]
+
 # 1,1 -1,1 -1,-1 1,-1
 # 0,2 -2,0 0,-2 2,0
 # 3,3 -3,3 -3,-3 3,-3
@@ -61,4 +64,4 @@ class Spiral:
 
 if __name__=="__main__":
     g = Spiral(xzero=10,yzero=10)
-    print(g.generate())
+    print(g.generate(steps=14))

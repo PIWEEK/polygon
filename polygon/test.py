@@ -45,6 +45,7 @@ def savefile(uniquepolygons):
     f.write(str(uniquepolygons))
     f.write("\n")
     f.close()
+    print("SAVED",filename)
     
 uniquepolygons = []
 
@@ -58,12 +59,15 @@ except:
 try:
     steps = int(sys.argv[2])
 except:
-    steps = 2
+    steps = 8
 
 try:
     alist = [(int(l.split()[0]),int(l.split()[1])) for l in open(sys.argv[3],'r').readlines()]
 except:
-    alist = [(0, 8), (2, 1), (3, 3), (5, 4), (7,8), (8,3)]
+    print("error de fichero")
+    g = spiral.Spiral(xzero=1,yzero=1)
+    alist = list(set(g.generate(steps=steps)))
+
 
 save = False
 compare = False
@@ -90,8 +94,6 @@ except:
 # g = goldenspiral.GoldenSpiral()
 # alist = g.generate(steps=steps)
 # alist = [(50, 100), (100, 50), (50, 50), (100, 100), (85,75), (75,95), (65,75), (75,55),(75,40),(75,110),(45,75),(110,75)]
-# g = spiral.Spiral(xzero=1,yzero=1)
-# alist = list(set(g.generate(steps=steps)))
 
 print("LOP",alist)
 xValues = [i[0] for i in alist]
@@ -128,6 +130,7 @@ for i in range(cycles):
             cycleinfo["stuck"] +=1
             cycleinfo["polstuck"].append(ps.lov)
             c=0
+            print("!",end='',flush=True)
             #print("\n############# UPS BLOQUEO")
 
             #print("LOV",ps.lov)
