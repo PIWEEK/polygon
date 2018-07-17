@@ -177,7 +177,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
 
         ptext = ""
         for p in cycleinfo["polstuck"]:
-            ptext += "\nplot '-' using 1:2 with linespoints pointtype 1 pointsize 0.5\n"
+            ptext += "\nplot '-' using 1:2 with linespoints pointtype 1 pointsize 0.8\n"
             for i in p:
                 ptext += "\n\t%i %i"%(i[0],i[1])
             ptext += "\n\te"
@@ -185,10 +185,10 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         finaltext = open("templates/stuck.gnu","w")
         finaltext.write(template)
         finaltext.close()
-        system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.png 2>/dev/null")
+        system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.svg 2>/dev/null")
 
 
-    #cycleinfo["polstuck"] = []
+    cycleinfo["polstuck"] = []
     print("CYCLE INFO",cycleinfo)
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 

@@ -2,8 +2,8 @@
 
 reset
 
-set terminal pngcairo size 1000,1000
-set output 'stuckpolygons.png'
+set terminal svg size 10000,10000 dynamic background rgb 'white'
+set output 'stuckpolygons.svg'
 
 set style line 1 lc rgb '#000000' lt 0 lw 0
 
