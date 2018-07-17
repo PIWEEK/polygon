@@ -40,5 +40,32 @@ set xrange [0:10]
 set yrange [0:10]
 
 
-plot 'test.txt' every :::0::0 with linespoints pointtype 1 pointsize 0.5, "" every :::1::1  with points pointtype 1 pointsize 0.5
+#plot 'test.txt' every :::0::0 with linespoints pointtype 1 pointsize 0.5, "" every :::1::1  with points pointtype 1 pointsize 0.5
 
+$data << EOD
+0 0
+1 3
+4 5
+1 7
+8 9
+
+3 4
+4 3
+6 7
+EOD
+
+plot "$data" every :::0::0 with linespoints pointtype 1 pointsize 0.5, "" every :::1::1  with points pointtype 1 pointsize 0.5
+
+$data << EOD
+9 9
+4 3
+4 5
+0 7
+3 9
+
+0 4
+4 2
+6 4
+EOD
+
+plot "$data" every :::0::0 with linespoints pointtype 1 pointsize 0.5, "" every :::1::1  with points pointtype 1 pointsize 0.5

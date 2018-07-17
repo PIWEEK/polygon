@@ -141,8 +141,8 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
         template = template + text + "\n"
 
-        xrangetext = "\nset xrange [%i:%i]\n"%(minX,maxX)
-        yrangetext = "\nset yrange [%i:%i]\n"%(minY,maxY)
+        xrangetext = "\nset xrange [%i:%i]\n"%(minX-2,maxX+2)
+        yrangetext = "\nset yrange [%i:%i]\n"%(minY-2,maxY+2)
 
  
         for p in uniquepolygons:
@@ -160,10 +160,11 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         finaltext = open("templates/finalnew.gnu","w")
         finaltext.write(template)
         finaltext.close()
-        system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null")
+        system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null &")
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
     cycleinfo["polstuck"].sort()
     cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
+
     if stuck:
         resfile = open("templates/templatestuck.gnu",'r')
         template = resfile.read()
@@ -172,20 +173,28 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
         template = template + text + "\n"
 
-        xrangetext = "\nset xrange [%i:%i]\n"%(minX,maxX)
-        yrangetext = "\nset yrange [%i:%i]\n"%(minY,maxY)
+        xrangetext = "\nset xrange [%i:%i]\n"%(minX-2,maxX+2)
+        yrangetext = "\nset yrange [%i:%i]\n"%(minY-2,maxY+2)
 
         ptext = ""
         for p in cycleinfo["polstuck"]:
-            ptext += "\nplot '-' using 1:2 with linespoints pointtype 1 pointsize 0.8\n"
+            ptext += "\n$data << EOD"
+
             for i in p:
-                ptext += "\n\t%i %i"%(i[0],i[1])
-            ptext += "\n\te"
+                ptext += "\n%i %i"%(i[0],i[1])
+            remainingpoints = set(ps.listofpoints) - set(p)
+            ptext += "\n"
+            for i in remainingpoints:
+                ptext += "\n%i %i"%(i[0],i[1])
+            ptext += "\nEOD\n\n"
+
+            ptext += """\nplot "$data" every :::0::0 with linespoints pointtype 2 pointsize 2, "" every :::1::1  with points pointtype 1 pointsize 3\n"""
+
         template = template + xrangetext + yrangetext + ptext
         finaltext = open("templates/stuck.gnu","w")
         finaltext.write(template)
         finaltext.close()
-        system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.svg 2>/dev/null")
+        system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.svg 2>/dev/null &")
 
 
     cycleinfo["polstuck"] = []

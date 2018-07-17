@@ -8,7 +8,7 @@ set output 'stuckpolygons.svg'
 set style line 1 lc rgb '#000000' lt 0 lw 0
 
 unset key
-set border 2 
+set border 31 
 unset tics
 
 set tmargin 4
