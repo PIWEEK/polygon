@@ -52,7 +52,7 @@ class Spiral:
             rectpoints += pointCderivatives
             rectpoints += pointDderivatives
 
-            return rectpoints[:steps]
+        return rectpoints[:steps]
 
 # 1,1 -1,1 -1,-1 1,-1
 # 0,2 -2,0 0,-2 2,0
@@ -64,4 +64,4 @@ class Spiral:
 
 if __name__=="__main__":
     g = Spiral(xzero=10,yzero=10)
-    print(g.generate(steps=14))
+    print(g.generate(steps=35))
