@@ -47,7 +47,7 @@ def savefile(uniquepolygons):
     f.close()
     print("SAVED",filename)
 
-def runTest(cycles, steps, alist, action, visual):
+def runTest(cycles, steps, alist, action, visual, stuck):
 
     uniquepolygons = []
     t=0
@@ -164,7 +164,31 @@ def runTest(cycles, steps, alist, action, visual):
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
     cycleinfo["polstuck"].sort()
     cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
-    cycleinfo["polstuck"] = []
+    if stuck:
+        resfile = open("templates/templatestuck.gnu",'r')
+        template = resfile.read()
+        size = len(cycleinfo["polstuck"])
+        dim = int(sqrt(size))
+        text = "set multiplot layout %i,%i rowsfirst"%(dim+1,dim+1)
+        template = template + text + "\n"
+
+        xrangetext = "\nset xrange [%i:%i]\n"%(minX,maxX)
+        yrangetext = "\nset yrange [%i:%i]\n"%(minY,maxY)
+
+        ptext = ""
+        for p in cycleinfo["polstuck"]:
+            ptext += "\nplot '-' using 1:2 with linespoints pointtype 1 pointsize 0.5\n"
+            for i in p:
+                ptext += "\n\t%i %i"%(i[0],i[1])
+            ptext += "\n\te"
+        template = template + xrangetext + yrangetext + ptext
+        finaltext = open("templates/stuck.gnu","w")
+        finaltext.write(template)
+        finaltext.close()
+        system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.png 2>/dev/null")
+
+
+    #cycleinfo["polstuck"] = []
     print("CYCLE INFO",cycleinfo)
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 
@@ -179,6 +203,8 @@ if __name__=="__main__":
     parser.add_argument("--inputfile", help="set the file containing the input points")
     parser.add_argument("--action", help="save or check")
     parser.add_argument("--visual", help="show visual ouput",
+                    action="store_true")
+    parser.add_argument("--stuck", help="show visual ouput for stuck protopolygons",
                     action="store_true")
 
 
@@ -207,4 +233,9 @@ if __name__=="__main__":
     else:
         visual = False
 
-    runTest(cycles,steps,alist,action,visual)
+    if args.stuck:
+        stuck = True
+    else:
+        stuck = False
+
+    runTest(cycles,steps,alist,action,visual, stuck)
