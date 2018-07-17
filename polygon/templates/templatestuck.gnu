@@ -5,7 +5,10 @@ reset
 set terminal svg size 10000,10000 dynamic background rgb 'white'
 set output 'stuckpolygons.svg'
 
-set style line 1 lc rgb '#000000' lt 0 lw 0
+#set style line 1 lc rgb '#000000' lt 0 lw 0
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 4 pt 7 pi -1 ps 1.5
+set pointintervalbox 3
 
 unset key
 set border 31 

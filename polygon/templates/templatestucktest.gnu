@@ -5,7 +5,10 @@ reset
 set terminal pngcairo size 1000,1000 
 set output 'stuckpolygons.png'
 
-set style line 1 lc rgb '#000000' lt 0 lw 0
+#set style line 1 lc rgb '#000000' lt 0 lw 0
+
+set style line 1 lc rgb '#0060ad' lt 1 lw 2 pt 7 pi -1 ps 1.5
+set pointintervalbox 3
 
 unset key
 set border 2 

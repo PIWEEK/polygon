@@ -188,7 +188,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
                 ptext += "\n%i %i"%(i[0],i[1])
             ptext += "\nEOD\n\n"
 
-            ptext += """\nplot "$data" every :::0::0 with linespoints pointtype 2 pointsize 2, "" every :::1::1  with points pointtype 1 pointsize 3\n"""
+            ptext += """\nplot "$data" every :::0::0 with linespoints ls 1, "" every :::1::1  with points pointtype 5 pointsize 3\n"""
 
         template = template + xrangetext + yrangetext + ptext
         finaltext = open("templates/stuck.gnu","w")
