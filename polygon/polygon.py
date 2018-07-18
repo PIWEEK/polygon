@@ -29,6 +29,8 @@ class PolygonStruct:
         self.qnodesegments = []
 
         self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0}
+        self.currentdeadends = []
+        self.stuck = False
 
     def reset(self):
 
@@ -101,11 +103,29 @@ class PolygonStruct:
 
     def chooseVertex(self, vpos, segments):
 
-        ch = choice(segments)
-        if ch[0] != vpos:
-            vertex = self.loi[ch[0]]["v"]
-        vertex = self.loi[ch[1]]["v"]
-        return vertex
+        try:
+            availablesegments = list(set(segments) - set(self.currentdeadends))
+            #print("AVSEG",availablesegments)
+            segmentstoberemoved = []
+            for avseg in availablesegments:
+                for avsegpot in availablesegments:
+                    if avseg != avsegpot:
+                        a = self.loi[avseg[0]]["v"]
+                        b = self.loi[avseg[1]]["v"]
+                        c = self.loi[avsegpot[1]]["v"]
+                        if intersect.pointBelongsToSegment(a,b,c):
+                            #print("ABC",a,b,c)
+                            segmentstoberemoved.append(avseg)
+            availablesegments = list(set(availablesegments) - set(segmentstoberemoved))
+            #print("availablesegments",availablesegments)
+            ch = choice(availablesegments)
+            # if ch[0] != vpos:
+            #     vertex = self.loi[ch[0]]["v"]
+            #     print("CUIDADO!")
+            vertex = self.loi[ch[1]]["v"]
+            return vertex
+        except:
+            return None
 
     def tryNewVertex(self):
 
@@ -239,6 +259,9 @@ class PolygonStruct:
         # self.firstnodesegments = []
         # self.qnodesegments = []
         # self.nvnodesegments = []
+        deadend = (self.lop[self.lov[-2]]["i"],self.lop[self.lov[-1]]["i"])
+        self.currentdeadends.append(deadend)
+
         self.lov.pop()
 
         # if len(self.lov) == 1:
@@ -309,47 +332,52 @@ class PolygonStruct:
             nv = self.tryNewVertex()
         else:
             nv = point
-        q = self.lov[-1]
 
-        self.lov.append(nv)
+        if nv:
+            q = self.lov[-1]
 
-        self.firstnodesegments = self.removenodesegments(self.initialvertex)
-        self.qnodesegments = self.removenodesegments(q)
-        self.nvnodesegments = self.removenodesegments(nv)
+            self.lov.append(nv)
 
 
-        self.rebuildLOVGraph()
-
-        self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
-
-        self.removeIntersectSegments(q,nv)
-        #print("isolated parts",self.numberofisolatedparts())
-        #print("segmentos tras sumar",nv,self.getIsolatedPartsAsListsOfPoints())
-        if verbose:
-            pass
-            # print("isolated parts",self.getIsolatedPartsAsListsOfPoints())
-            # print("number of isolated parts",self.numberofisolatedparts())
+            self.firstnodesegments = self.removenodesegments(self.initialvertex)
+            self.qnodesegments = self.removenodesegments(q)
+            self.nvnodesegments = self.removenodesegments(nv)
 
 
-        if self.checkIsolatedGraphs():
-            if self.checkUnreachableOneNeighborNodes():
-                if self.checkThreeOneNeighborNodes():
-                    self.addnodesegments(self.nvnodesegments)
-                    self.addnodesegments(self.firstnodesegments)
-                    self.am.removeSegment(0,self.lop[nv]["i"])
-                    #print("isolated parts tras restaurar",self.numberofisolatedparts())
-                    #print("segmentos tras restaurar",nv,self.getIsolatedPartsAsListsOfPoints())
+            self.rebuildLOVGraph()
+
+            self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
+
+            self.removeIntersectSegments(q,nv)
+            #print("isolated parts",self.numberofisolatedparts())
+            #print("segmentos tras sumar",nv,self.getIsolatedPartsAsListsOfPoints())
+            if verbose:
+                pass
+                # print("isolated parts",self.getIsolatedPartsAsListsOfPoints())
+                # print("number of isolated parts",self.numberofisolatedparts())
+
+
+            if self.checkIsolatedGraphs():
+                if self.checkUnreachableOneNeighborNodes():
+                    if self.checkThreeOneNeighborNodes():
+                        self.addnodesegments(self.nvnodesegments)
+                        self.addnodesegments(self.firstnodesegments)
+                        self.am.removeSegment(0,self.lop[nv]["i"])
+
+                        self.currentdeadends = []
+
+                    else:
+                        self.cycleinfo["threeone"] +=1
+                        self.undoLastVertex()
                 else:
-                    self.cycleinfo["threeone"] +=1
+                    self.cycleinfo["unreachable"] +=1
                     self.undoLastVertex()
             else:
-                self.cycleinfo["unreachable"] +=1
+                #print(self.traceback())
+                self.cycleinfo["subgraphs"] +=1
                 self.undoLastVertex()
         else:
-            #print(self.traceback())
-            self.cycleinfo["subgraphs"] +=1
-            self.undoLastVertex()
-
+            self.stuck = True
 
 
     def removeIntersectSegments(self, p, q):

@@ -16,6 +16,24 @@ def orientation(p, q, r):
     else:
         return 2
 
+def pointBelongsToSegment(a, b, c):
+
+    crossproduct = (c[1] - a[1]) * (b[0] - a[0]) - (c[0] - a[0]) * (b[1] - a[1])
+
+    # compare versus epsilon for floating point values, or != 0 if using integers
+    if abs(crossproduct) != 0:
+        return False
+
+    dotproduct = (c[0] - a[0]) * (b[0] - a[0]) + (c[1] - a[1])*(b[1] - a[1])
+    if dotproduct < 0:
+        return False
+
+    squaredlengthba = (b[0] - a[0])*(b[0] - a[0]) + (b[1] - a[1])*(b[1] - a[1])
+    if dotproduct > squaredlengthba:
+        return False
+
+    return True
+
 def doIntersect(p1, q1, p2, q2):
 
     # Shared points
@@ -25,21 +43,21 @@ def doIntersect(p1, q1, p2, q2):
     if q1==p2 or q1==q2:
         return False
 
-    # Points belong to other line
-    #
+#    Points belong to other line
+    
     # a = p1[1]-p2[1]
     # b = (q2[1]-p2[1])*(p1[0]-p2[0])/(q2[0]-p2[0])
-    #
+    
     # c = q1[1]-p2[1]
     # d = (q2[1]-p2[1])*(q1[0]-p2[0])/(q2[0]-p2[0])
-    #
+    
     # e = p2[1]-p1[1]
     # f = (q1[1]-p1[1])*(p2[0]-p1[0])/(q1[0]-p1[0])
-    #
+    
     # g = q2[1]-p1[1]
     # h = (q1[1]-p1[1])*(q2[0]-p1[0])/(q1[0]-p1[0])
 
-    #
+    
     # if a==b or c==d:
     #     return False
     # if e==f or g==h:
@@ -106,3 +124,11 @@ if __name__=="__main__":
     q2 = (0, 8)
 
     print(doIntersect(p1, q1, p2, q2))
+
+
+    p1 = (0, 0)
+    q1 = (10, 0)
+    p2 = (10, 0)
+    q2 = (2, 0)
+
+    print(pointBelongsToSegment(p1, p2, q2))

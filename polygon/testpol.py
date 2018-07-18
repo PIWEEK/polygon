@@ -80,16 +80,11 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         oldq = (-1,-1)
         while not ps.allPointsUsed():
             ps.cycle()
-            if ps.lov[-1] == oldq:
-                c+=1
-            else:
-                c=0
-                oldq = ps.lov[-1]
-            if c> 10:
+            if ps.stuck:
                 cycleinfo["stuck"] +=1
                 cycleinfo["polstuck"].append(ps.lov)
-                c=0
                 print("!",end='',flush=True)
+                #print("deadends",ps.currentdeadends)
                 break
 
         if ps.checkValidFinalPolygon():
@@ -143,7 +138,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
 
         xrangetext = "\nset xrange [%i:%i]\n"%(minX-2,maxX+2)
         yrangetext = "\nset yrange [%i:%i]\n"%(minY-2,maxY+2)
-
+        template = template + xrangetext + yrangetext
  
         for p in uniquepolygons:
             ptext = "set object 1 polygon from "
@@ -151,12 +146,12 @@ def runTest(cycles, steps, alist, action, visual, stuck):
                 ptext += "%i, %i to "%(i[0],i[1])
 
             if p[-1]==minperimeter:
-                ptext += "%i, %i to %i, %i fillstyle transparent solid 0.9"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
+                ptext += " %i, %i fillstyle solid 0.8"%(p[0][0],p[0][1])
 
             else:
-                ptext += "%i, %i to %i, %i fillstyle transparent solid 0.3"%(p[-2][0],p[-2][1],p[0][0],p[0][1])
+                ptext += " %i, %i fillstyle solid 0.4"%(p[0][0],p[0][1])
 
-            template = template + xrangetext + yrangetext + ptext +"\nplot f(x) with lines ls 1\n"
+            template = template + ptext +"\nplot f(x) with lines ls 1\n"
         finaltext = open("templates/finalnew.gnu","w")
         finaltext.write(template)
         finaltext.close()
@@ -197,7 +192,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
         system("gnuplot templates/stuck.gnu && gwenview stuckpolygons.svg 2>/dev/null &")
 
 
-    cycleinfo["polstuck"] = []
+    #cycleinfo["polstuck"] = []
     print("CYCLE INFO",cycleinfo)
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 

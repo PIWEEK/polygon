@@ -5,8 +5,8 @@ reset
 set terminal svg size 10000,10000 dynamic background rgb 'white'
 set output 'polygons.svg'
 
-set style line 1 lc rgb '#000000' lt 0 lw 0
-
+set style line 1 lc rgb '#761CEC' lt 0 lw 0
+#set style fill   solid 1.00 border lt -1
 unset key
 set border 31 
 unset tics
