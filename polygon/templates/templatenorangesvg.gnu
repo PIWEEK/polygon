@@ -11,10 +11,10 @@ unset key
 set border 31 
 unset tics
 
-set tmargin 4
-set bmargin 4
-set rmargin 4
-set lmargin 4
+set tmargin 2
+set bmargin 2
+set rmargin 2
+set lmargin 2
 
 set format y ""
 set format x ""

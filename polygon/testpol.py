@@ -10,12 +10,23 @@ import goldenspiral, spiral
 def perimeter(polygon):
 
     p = float(0)
-    for i in range(len(polygon)-1):
+    polygonp = polygon[:-1]
+    for i in range(len(polygonp)-1):
         a = polygon[i]
-        b = polygon[+1]
+        b = polygon[i+1]
         p += sqrt(abs(a[0]-b[0])+abs(a[1]-b[1]))
     return p
 
+def area(polygon):
+    area = float(0)
+    j = len(polygon)-2
+    
+    X = [p[0] for p in polygon[:-1]]
+    Y = [p[1] for p in polygon[:-1]]
+    for i in range(len(polygon)-1):
+        area += (X[j]+X[i]) * (Y[j]-Y[i])
+        j=i
+    return abs(area/2)
 
 def comparewithsavedfile(uniquepolygons):
     m = hashlib.sha256()
@@ -47,9 +58,10 @@ def savefile(uniquepolygons):
     f.close()
     print("SAVED",filename)
 
-def runTest(cycles, steps, alist, action, visual, stuck):
+def runTest(cycles, steps, alist, action, visual, stuck, single):
 
     uniquepolygons = []
+    jsonpolygons = []
     t=0
 
 
@@ -64,7 +76,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
     maxY = yValues[-1]
 
 
-    cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "stuck":0, "polstuck":[]}
+    cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "stuck":0, "firstnodeisolated": 0, "polstuck":[]}
 
     for i in range(cycles):
         print(".",end='',flush=True)
@@ -91,22 +103,36 @@ def runTest(cycles, steps, alist, action, visual, stuck):
             cycleinfo["subgraphs"] += ps.cycleinfo["subgraphs"]
             cycleinfo["threeone"] += ps.cycleinfo["threeone"]
             cycleinfo["unreachable"] += ps.cycleinfo["unreachable"]
+            cycleinfo["firstnodeisolated"] += ps.cycleinfo["firstnodeisolated"]
             print("-",end='',flush=True)
             ps.lov.append(ps.lov[0])
             psreverse = ps.lov[:]
             psreverse.reverse()
 #            if len(ps.lov) == ps.size+1:
             if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
+
                 if ps.lov < psreverse:
                     uniquepolygons.append(ps.lov)
                 else:
                     uniquepolygons.append(psreverse)
+
+                if single:
+                    jsondata = ps.getJSON()
+                    jsonpolygons.append(jsondata)
+                    o = open("outputpolygon.json","w")
+                    o.write(jsondata)
+                    o.close()
+                    #print(jsondata)
+
                 print("*",end='',flush=True)
+
+
+
 
 
 # PERIMETER COMPUTE
 
-    minperimeter = float(100000)
+    minperimeter = float(1000000)
     pos = 0
     posper = 0
     for p in uniquepolygons:
@@ -118,6 +144,22 @@ def runTest(cycles, steps, alist, action, visual, stuck):
             posper = pos
 
     print("\nMIN PERIMETER",minperimeter)
+
+
+# AREA COMPUTE
+
+    minarea = float(1000000)
+    pos = 0
+    posper = 0
+    for p in uniquepolygons:
+        pos+=1
+        areap = area(p)
+        p.append(areap)
+        if areap<minarea:
+            minarea=areap
+            posper = pos
+
+    print("\nMIN AREA",minarea)
 
 # SAVE OR COMPARE
 
@@ -145,11 +187,14 @@ def runTest(cycles, steps, alist, action, visual, stuck):
             for i in p[:-2]:
                 ptext += "%i, %i to "%(i[0],i[1])
 
-            if p[-1]==minperimeter:
-                ptext += " %i, %i fillstyle solid 0.8"%(p[0][0],p[0][1])
+            if p[-2]==minperimeter:
+                ptext += " %i, %i fillstyle solid 0.5"%(p[0][0],p[0][1])
+
+            elif p[-1]==minarea:
+                ptext += " %i, %i fillstyle solid 0.9"%(p[0][0],p[0][1])
 
             else:
-                ptext += " %i, %i fillstyle solid 0.4"%(p[0][0],p[0][1])
+                ptext += " %i, %i fillstyle solid 0.2"%(p[0][0],p[0][1])
 
             template = template + ptext +"\nplot f(x) with lines ls 1\n"
         finaltext = open("templates/finalnew.gnu","w")
@@ -183,7 +228,7 @@ def runTest(cycles, steps, alist, action, visual, stuck):
                 ptext += "\n%i %i"%(i[0],i[1])
             ptext += "\nEOD\n\n"
 
-            ptext += """\nplot "$data" every :::0::0 with linespoints ls 1, "" every :::1::1  with points pointtype 5 pointsize 3\n"""
+            ptext += """\nplot "$data" every :::0::0 with linespoints ls 1, "" every :::1::1  with points pointtype 5 pointsize 1.5\n"""
 
         template = template + xrangetext + yrangetext + ptext
         finaltext = open("templates/stuck.gnu","w")
@@ -210,6 +255,9 @@ if __name__=="__main__":
                     action="store_true")
     parser.add_argument("--stuck", help="show visual ouput for stuck protopolygons",
                     action="store_true")
+    parser.add_argument("--single", help="output polygons as we find them",
+                    action="store_true")
+
 
 
     args = parser.parse_args()
@@ -242,4 +290,10 @@ if __name__=="__main__":
     else:
         stuck = False
 
-    runTest(cycles,steps,alist,action,visual, stuck)
+    if args.single:
+        single = True
+    else:
+        single = False
+
+
+    runTest(cycles,steps,alist,action,visual,stuck,single)

@@ -1,6 +1,8 @@
 import time
 import adjmatrix
 import intersect
+import hashlib
+import json
 from math import sqrt
 from os import system
 from collections import Counter
@@ -28,9 +30,44 @@ class PolygonStruct:
         self.nvnodesegments = []
         self.qnodesegments = []
 
-        self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0}
+        self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "firstnodeisolated":0}
         self.currentdeadends = []
         self.stuck = False
+    
+
+    def area(self):
+        area = float(0)
+        j = len(self.lov)-2
+        X = [p[0] for p in self.lov[:-1]]
+        Y = [p[1] for p in self.lov[:-1]]
+    
+        for i in range(len(self.lov)-1):
+            area += (X[j]+X[i]) * (Y[j]-Y[i])
+            j=i
+        return abs(area/2)
+
+    def perimeter(self):
+
+        peri = float(0)
+        for i in range(len(self.lov)-1):
+            a = self.lov[i]
+            b = self.lov[+1]
+            peri+= sqrt(abs(a[0]-b[0])+abs(a[1]-b[1]))
+        return peri
+
+    def hash(self):
+        h = hashlib.sha256()
+        encodedlov = str(self.lov).encode()
+        h.update(encodedlov)
+        return h.hexdigest()
+
+    def getJSON(self):
+        vertex = [list(elem) for elem in self.lov]
+        peri = self.perimeter()
+        area = self.area()
+        polyhash = self.hash()
+        jsonvertex = {"vertex":vertex, "hash":polyhash, "properties": {"perimeter":peri, "area":area}}
+        return json.dumps(jsonvertex)
 
     def reset(self):
 
@@ -65,7 +102,23 @@ class PolygonStruct:
     def setInitialVertex(self):
 
         self.lov.append(self.initialvertex)
+        self.removeSuperimposingEdges()
 
+
+    def removeSuperimposingEdges(self):
+
+        edgestoberemoved = []
+        for point in self.listofpoints:
+            for edge in self.am.getSegments():
+                c = point
+                a = self.loi[edge[0]]["v"]
+                b = self.loi[edge[1]]["v"]
+                if intersect.pointBelongsToSegment(a,b,c):
+                    if c not in [a,b]:
+                        edgestoberemoved.append(edge)
+        self.am.adjmatrix.remove_edges_from(edgestoberemoved)
+    
+        self.oldadjmatrix = deepcopy(self.am.adjmatrix)
 
     def allPointsUsed(self):
 
@@ -334,12 +387,15 @@ class PolygonStruct:
             nv = point
 
         if nv:
+            p = self.lov[0]
             q = self.lov[-1]
 
             self.lov.append(nv)
 
 
+            #print("ACABAMOS DE BORRAR",self.firstnodesegments)
             self.firstnodesegments = self.removenodesegments(self.initialvertex)
+            
             self.qnodesegments = self.removenodesegments(q)
             self.nvnodesegments = self.removenodesegments(nv)
 
@@ -349,6 +405,8 @@ class PolygonStruct:
             self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
 
             self.removeIntersectSegments(q,nv)
+            
+
             #print("isolated parts",self.numberofisolatedparts())
             #print("segmentos tras sumar",nv,self.getIsolatedPartsAsListsOfPoints())
             if verbose:
@@ -356,12 +414,16 @@ class PolygonStruct:
                 # print("isolated parts",self.getIsolatedPartsAsListsOfPoints())
                 # print("number of isolated parts",self.numberofisolatedparts())
 
-
-            if self.checkIsolatedGraphs():
+            
+            if len(self.firstnodesegments) > 1:
+             if self.checkIsolatedGraphs():
                 if self.checkUnreachableOneNeighborNodes():
                     if self.checkThreeOneNeighborNodes():
                         self.addnodesegments(self.nvnodesegments)
+
                         self.addnodesegments(self.firstnodesegments)
+                        self.removeIntersectSegments(q,nv,self.firstnodesegments)
+
                         self.am.removeSegment(0,self.lop[nv]["i"])
 
                         self.currentdeadends = []
@@ -372,18 +434,25 @@ class PolygonStruct:
                 else:
                     self.cycleinfo["unreachable"] +=1
                     self.undoLastVertex()
-            else:
+             else:
                 #print(self.traceback())
                 self.cycleinfo["subgraphs"] +=1
                 self.undoLastVertex()
+            else:
+                self.cycleinfo["firstnodeisolated"] +=1
+                self.undoLastVertex()    
         else:
+            #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
             self.stuck = True
 
 
-    def removeIntersectSegments(self, p, q):
+    def removeIntersectSegments(self, p, q, listofsegments=None):
 
-        #print("removing intersecting segments for",p,q)
-        segments = self.am.getSegments()
+        if listofsegments:
+            segments = listofsegments
+        else:
+            segments = self.am.getSegments()
+        #print("SEGMENTS",segments)
         segmentstoberemoved = []
         for seg in segments:
             #print("seg",seg)
@@ -393,6 +462,10 @@ class PolygonStruct:
             if intersect.doIntersect(p,q,r,s):
                 #print("p-q and r-s intersect",p,q,r,s)
                 segmentstoberemoved.append(seg)
+
+                # if seg in self.firstnodesegments:
+                #     print("ATENCION",seg,self.firstnodesegments)
+                #     self.firstnodesegments.remove(seg)
         self.am.adjmatrix.remove_edges_from(segmentstoberemoved)
 
 
