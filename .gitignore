@@ -59,4 +59,11 @@ target/
 # polygon specific files
 final.gnu
 polygons.svg
-.vscode
+
+front/.vscode.DS_Store
+front/node_modules/
+front/dist/
+front/npm-debug.log*
+front/yarn-debug.log*
+front/yarn-error.log*
+front/test/unit/coverage
