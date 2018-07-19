@@ -153,10 +153,13 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
 
         pool = Pool(processes=7)#,initializer=init, initargs=(l,))
         polygons = pool.map(obtainPolygons, psStructs)
-
         pool.close()
         pool.join()
-        gapolygons.append(polygons)
+        gapolygons.extend(polygons)
+        gapolygons = [p for p in gapolygons if p]
+        print("\n############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",gaps*(s+1),len(gapolygons))
+        time.sleep(2)
+
     
     #uniquepolygons = [p for p in gapolygons if p]
          
