@@ -33,6 +33,8 @@ def echo_socket(ws, param_uuid):
             print(polygon)
             ws.send(polygon)
 
+        ws.close()
+
 if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler

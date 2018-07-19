@@ -3,8 +3,15 @@
     <div class="four column row">
       <div class="column">
         <h3>Actions:</h3>
-        <button @click="submitPoints">submit points</button>
-        <button @click="clearPoints">clear points</button>
+        <div v-if="processing">
+          <div class="ui active inline loader"></div> Processing
+        </div>
+        <div v-else>
+          <button class="ui button" @click="submitPoints" :disabled="processing">
+            Submit points
+          </button>
+          <button class="ui button" @click="clearPoints" :disabled="processing">Clear points</button>
+        </div>
 
         <h3>Properties:</h3>
         <ul>
@@ -42,7 +49,7 @@
       </div>
 
       <div class="column">
-        <h3>CurrentResult</h3>
+        <h3>CurrentResult ({{ polygonCounter }})</h3>
         <canvas
           ref="outputCanvas"
           :width="settings.canvasWidth"
@@ -73,7 +80,7 @@
 
     <div class="four column row">
       <div class="column">
-        <h3>Min perimeter</h3>
+        <h3>Min perimeter ({{ minPerimeter }})</h3>
         <canvas
           ref="minPerimeterCanvas"
           :width="settings.canvasWidth"
@@ -83,7 +90,7 @@
       </div>
 
       <div class="column">
-        <h3>Max perimeter</h3>
+        <h3>Max perimeter ({{ maxPerimeter }})</h3>
         <canvas
           ref="maxPerimeterCanvas"
           :width="settings.canvasWidth"
@@ -93,7 +100,7 @@
       </div>
 
       <div class="column">
-        <h3>Min area</h3>
+        <h3>Min area ({{ minArea }})</h3>
         <canvas
           ref="minAreaCanvas"
           :width="settings.canvasWidth"
@@ -103,7 +110,7 @@
       </div>
 
       <div class="column">
-        <h3>Max area</h3>
+        <h3>Max area ({{ maxArea }})</h3>
         <canvas
           ref="maxAreaCanvas"
           :width="settings.canvasWidth"
@@ -137,6 +144,7 @@ export default {
       overPoint: {},
       points: [],
       cycles: 500,
+      polygonCounter: 0,
       resultPoints: [],
       minPerimeterPoints: [],
       maxPerimeterPoints: [],
@@ -145,7 +153,8 @@ export default {
       minPerimeter: Number.MAX_SAFE_INTEGER,
       maxPerimeter: Number.MIN_SAFE_INTEGER,
       minArea: Number.MAX_SAFE_INTEGER,
-      maxArea: Number.MIN_SAFE_INTEGER
+      maxArea: Number.MIN_SAFE_INTEGER,
+      processing: false
     }
   },
   computed: {
@@ -221,8 +230,11 @@ export default {
       }
       this.$http.post('http://127.0.0.1:5000/', payload).then((response) => {
         const uuid = response.data.uuid
+        this.polygonCounter = 0
+        this.processing = true
         const ws = new WebSocket('ws://127.0.0.1:5000/polygons/' + uuid)
         ws.onmessage = (event) => {
+          this.polygonCounter += 1
           const data = JSON.parse(event.data)
           const area = data.properties.area
           const perimeter = data.properties.perimeter
@@ -249,6 +261,9 @@ export default {
 
           this.resultPoints = data.vertex
         }
+        ws.onclose = (event) => {
+          this.processing = false
+        }
       })
     },
     resetCalculatedData () {
@@ -261,6 +276,7 @@ export default {
       this.maxPerimeter = Number.MIN_SAFE_INTEGER
       this.minArea = Number.MAX_SAFE_INTEGER
       this.maxArea = Number.MIN_SAFE_INTEGER
+      this.polygonCounter = 0
     },
     clearPoints () {
       this.points = []
@@ -331,7 +347,7 @@ export default {
     padding-top: 15px;
   }
   input {
-    width: 50px;
+    width: 150px;
   }
   label {
     display:inline-block;
