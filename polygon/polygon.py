@@ -296,32 +296,7 @@ class PolygonStruct:
                     return False
         return True
 
-    def undoLastVertex(self):
 
-        
-        self.am.adjmatrix = self.oldadjmatrix
-        self.addnodesegments(self.firstnodesegments)
-        # if len(self.lov) == 2:
-        #     p = self.lov[0]
-        #     q = self.lov[1]
-        #     self.reset()
-        #     self.removeSegment(p,q)
-        # else:
-        self.addnodesegments(self.qnodesegments)
-        self.addnodesegments(self.nvnodesegments)
-        # self.firstnodesegments = []
-        # self.qnodesegments = []
-        # self.nvnodesegments = []
-        deadend = (self.lop[self.lov[-2]]["i"],self.lop[self.lov[-1]]["i"])
-        self.currentdeadends.append(deadend)
-
-        self.lov.pop()
-
-        # if len(self.lov) == 1:
-        #     self.firstnodesegments = []
-        #     self.nvnodesegments = []
-
-        #     #print("undoLastVertex",self.getIsolatedParts())
 
 
 
@@ -392,8 +367,9 @@ class PolygonStruct:
 
             self.lov.append(nv)
 
-
+            self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
             #print("ACABAMOS DE BORRAR",self.firstnodesegments)
+            self.removeIntersectSegments(q,nv)
             self.firstnodesegments = self.removenodesegments(self.initialvertex)
             
             self.qnodesegments = self.removenodesegments(q)
@@ -402,19 +378,7 @@ class PolygonStruct:
 
             self.rebuildLOVGraph()
 
-            self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
-
-            self.removeIntersectSegments(q,nv)
-            
-
-            #print("isolated parts",self.numberofisolatedparts())
-            #print("segmentos tras sumar",nv,self.getIsolatedPartsAsListsOfPoints())
-            if verbose:
-                pass
-                # print("isolated parts",self.getIsolatedPartsAsListsOfPoints())
-                # print("number of isolated parts",self.numberofisolatedparts())
-
-            
+           
             if len(self.firstnodesegments) > 1:
              if self.checkIsolatedGraphs():
                 if self.checkUnreachableOneNeighborNodes():
@@ -422,7 +386,7 @@ class PolygonStruct:
                         self.addnodesegments(self.nvnodesegments)
 
                         self.addnodesegments(self.firstnodesegments)
-                        self.removeIntersectSegments(q,nv,self.firstnodesegments)
+                        # self.removeIntersectSegments(q,nv,self.firstnodesegments)
 
                         self.am.removeSegment(0,self.lop[nv]["i"])
 
@@ -440,11 +404,27 @@ class PolygonStruct:
                 self.undoLastVertex()
             else:
                 self.cycleinfo["firstnodeisolated"] +=1
-                self.undoLastVertex()    
+                #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
+                self.undoLastVertex()
         else:
-            #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
+            
             self.stuck = True
+            
 
+
+    def undoLastVertex(self):
+
+        
+        self.am.adjmatrix = self.oldadjmatrix
+        # self.addnodesegments(self.firstnodesegments)
+
+        # self.addnodesegments(self.qnodesegments)
+        # self.addnodesegments(self.nvnodesegments)
+
+        deadend = (self.lop[self.lov[-2]]["i"],self.lop[self.lov[-1]]["i"])
+        self.currentdeadends.append(deadend)
+
+        self.lov.pop()
 
     def removeIntersectSegments(self, p, q, listofsegments=None):
 

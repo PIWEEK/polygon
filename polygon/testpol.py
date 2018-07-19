@@ -95,15 +95,17 @@ def runTest(cycles, steps, alist, action, visual, stuck, single):
             if ps.stuck:
                 cycleinfo["stuck"] +=1
                 cycleinfo["polstuck"].append(ps.lov)
+                #print("STUCK",ps.lov,ps.am.adjmatrix.edges)
                 print("!",end='',flush=True)
                 #print("deadends",ps.currentdeadends)
                 break
 
+        cycleinfo["subgraphs"] += ps.cycleinfo["subgraphs"]
+        cycleinfo["threeone"] += ps.cycleinfo["threeone"]
+        cycleinfo["unreachable"] += ps.cycleinfo["unreachable"]
+        cycleinfo["firstnodeisolated"] += ps.cycleinfo["firstnodeisolated"]
         if ps.checkValidFinalPolygon():
-            cycleinfo["subgraphs"] += ps.cycleinfo["subgraphs"]
-            cycleinfo["threeone"] += ps.cycleinfo["threeone"]
-            cycleinfo["unreachable"] += ps.cycleinfo["unreachable"]
-            cycleinfo["firstnodeisolated"] += ps.cycleinfo["firstnodeisolated"]
+
             print("-",end='',flush=True)
             ps.lov.append(ps.lov[0])
             psreverse = ps.lov[:]
