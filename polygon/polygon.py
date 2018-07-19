@@ -89,6 +89,15 @@ class PolygonStruct:
         jsonvertex = {"vertex":vertex, "hash":polyhash, "properties": {"perimeter":peri, "area":area}}
         return json.dumps(jsonvertex)
 
+    def getDict(self):
+        vertex = [elem for elem in self.lov]
+        peri = self.perimeter()
+        area = self.area()
+        polyhash = self.hash()
+        jsonvertex = {"vertex":vertex, "hash":polyhash, "properties": {"perimeter":peri, "area":area}}
+        return jsonvertex
+
+
     def reset(self):
 
         self.lov = []
@@ -503,3 +512,4 @@ if __name__=="__main__":
     ps.setInitialVertex()
     ps.generateIntersectMatrix()
     print(ps.intersectmatrix)
+    print(ps.getDict())

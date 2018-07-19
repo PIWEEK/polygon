@@ -6,6 +6,14 @@ import time
 import itertools
 import hashlib
 import goldenspiral, spiral
+from multiprocessing import Pool, Queue, Lock, Manager
+from multiprocessing.pool import ThreadPool
+
+
+manager = Manager()
+uniquepolygons = manager.list()
+stuckpolygons = manager.list()
+
 
 def perimeter(polygon):
 
@@ -58,9 +66,54 @@ def savefile(uniquepolygons):
     f.close()
     print("SAVED",filename)
 
+def obtainPolygons(psStruct):
+    global uniquepolygons
+    ps = psStruct
+    ps.setInitialVertex()
+
+    while not ps.allPointsUsed():
+        ps.cycle()
+        if ps.stuck:
+            print("!",end='',flush=True)
+            stuckpolygons.append(ps.lov)
+            break
+
+    if ps.checkValidFinalPolygon():
+        print(".",end='',flush=True)
+        ps.lov.append(ps.initialvertex)
+        psreverse = ps.lov[:]
+        psreverse.reverse()
+
+        # if ps.lov < psreverse:
+        #     return ps.lov
+        # else:
+        #     ps.lov = psreverse
+        #     return ps.lov
+        
+        if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
+            print("*",end='',flush=True)
+ 
+            
+            if ps.lov < psreverse:
+                uniquepolygons.append(ps.lov)
+            else:
+                ps.lov = psreverse
+                uniquepolygons.append(ps.lov)
+                
+            # lock.release()
+            return ps.lov
+        else:
+            print("-",end='',flush=True)
+        # lock.release()
+
+def init(l):
+    global lock
+    lock = l
+
 def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
 
-    uniquepolygons = []
+    global uniquepolygons
+
     jsonpolygons = []
     t=0
 
@@ -77,68 +130,41 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
 
 
     cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "stuck":0, "firstnodeisolated": 0, "polstuck":[]}
+
+
     if intersect:
         ps = polygon.PolygonStruct(alist)
         ps.setInitialVertex()
         ps.generateIntersectMatrix()
         print("INTERSECT MATRIX",ps.intersectmatrix)
 
-    for i in range(cycles):
-        print(".",end='',flush=True)
-        c=0
-        t+=1
 
-        if t%500==0:
-            print("\n############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",t,len(uniquepolygons))
-            time.sleep(2)
+    
+    gaps = 500
+    steps = int(cycles/gaps)
+    gapolygons = []
+    for s in range(steps):
+        psStructs = []
 
-        ps = polygon.PolygonStruct(alist)
-        ps.setInitialVertex()
-        oldq = (-1,-1)
-        while not ps.allPointsUsed():
-            ps.cycle()
-            if ps.stuck:
-                cycleinfo["stuck"] +=1
-                cycleinfo["polstuck"].append(ps.lov)
-                #print("STUCK",ps.lov,ps.am.adjmatrix.edges)
-                print("!",end='',flush=True)
-                #print("deadends",ps.currentdeadends)
-                break
+        for g in range(gaps):
+            ps = polygon.PolygonStruct(alist)
+            psStructs.append(ps)
+   
 
-        cycleinfo["subgraphs"] += ps.cycleinfo["subgraphs"]
-        cycleinfo["threeone"] += ps.cycleinfo["threeone"]
-        cycleinfo["unreachable"] += ps.cycleinfo["unreachable"]
-        cycleinfo["firstnodeisolated"] += ps.cycleinfo["firstnodeisolated"]
-        if ps.checkValidFinalPolygon():
+        pool = Pool(processes=7)#,initializer=init, initargs=(l,))
+        polygons = pool.map(obtainPolygons, psStructs)
 
-            print("-",end='',flush=True)
-            ps.lov.append(ps.lov[0])
-            psreverse = ps.lov[:]
-            psreverse.reverse()
-#            if len(ps.lov) == ps.size+1:
-            if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
-
-                if ps.lov < psreverse:
-                    uniquepolygons.append(ps.lov)
-                else:
-                    uniquepolygons.append(psreverse)
-
-                if single:
-                    jsondata = ps.getJSON()
-                    jsonpolygons.append(jsondata)
-                    o = open("outputpolygon.json","w")
-                    o.write(jsondata)
-                    o.close()
-                    #print(jsondata)
-
-                print("*",end='',flush=True)
-
-
-
+        pool.close()
+        pool.join()
+        gapolygons.append(polygons)
+    
+    #uniquepolygons = [p for p in gapolygons if p]
+         
+    #print("UP",uniquepolygons)
 
 
 # PERIMETER COMPUTE
-
+    uniquepolygons = uniquepolygons[:]
     minperimeter = float(1000000)
     pos = 0
     posper = 0
@@ -208,7 +234,9 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
         finaltext.write(template)
         finaltext.close()
         system("gnuplot templates/finalnew.gnu && gwenview polygons.svg 2>/dev/null &")
-    print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
+  
+    cycleinfo = {}
+    cycleinfo["polstuck"] = stuckpolygons[:]
     cycleinfo["polstuck"].sort()
     cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
 
@@ -245,7 +273,7 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
 
 
     #cycleinfo["polstuck"] = []
-    print("CYCLE INFO",cycleinfo)
+    #print("CYCLE INFO",cycleinfo)
     print("TOTAL UNIQUE POLYGONS",len(uniquepolygons))
 
 

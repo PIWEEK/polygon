@@ -1,10 +1,12 @@
 import sys
 import polygon
 import spiral
-from multiprocessing import Pool
+from multiprocessing import Pool, Queue
 from multiprocessing.dummy import Pool as ThreadPool
 
 uniquepolygons = []
+
+q = Queue()
 
 def obtainPolygons(psStruct):
     ps = psStruct
@@ -23,28 +25,31 @@ def obtainPolygons(psStruct):
             ps.lov = psreverse
         
         if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
-            uniquepolygons.append(ps.lov)
+            return ps.lov
+            # uniquepolygons.append(ps.lov)
 
-
-            print(ps.getJSON())
-        else:
-            print(ps.getJSON())
+            #print(ps.getJSON())
+        # else:
+        #     print(ps.getJSON())
             #return ps.getJSON()
 
 
 def generate(cycles, vertexlist):
-    uniquepolygons = []
-    pool = Pool(4) 
+
+    pool = Pool(7) 
 
     psStructs = []
     for i in range(cycles):
         ps = polygon.PolygonStruct(vertexlist)
         psStructs.append(ps)
 
-    polygons = pool.map(obtainPolygons, psStructs)
+    for p in  pool.map(obtainPolygons, psStructs):
+        print("P",p)
 
     pool.close()
+
     pool.join()
+
     # for i in range(cycles):
     #     ps = polygon.PolygonStruct(vertexlist)
     #     ps.setInitialVertex()
