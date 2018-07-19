@@ -110,7 +110,7 @@ def init(l):
     global lock
     lock = l
 
-def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
+def runTest(cycles, steps, alist, action, visual, stuck, single, intersect, processes):
 
     global uniquepolygons
 
@@ -151,7 +151,7 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
             psStructs.append(ps)
    
 
-        pool = Pool(processes=7)#,initializer=init, initargs=(l,))
+        pool = Pool(processes)#,initializer=init, initargs=(l,))
         polygons = pool.map(obtainPolygons, psStructs)
         pool.close()
         pool.join()
@@ -297,6 +297,7 @@ if __name__=="__main__":
                     action="store_true")
     parser.add_argument("--intersect", help="generate intersect matrix of all points",
                     action="store_true")
+    parser.add_argument("--processes", help="number of separate process to run in parallel", type=int)
 
 
 
@@ -340,4 +341,9 @@ if __name__=="__main__":
     else:
         intersect = False
 
-    runTest(cycles,steps,alist,action,visual,stuck,single,intersect)
+    if args.processes:
+        processes = args.processes
+    else:
+        processes = 1
+
+    runTest(cycles,steps,alist,action,visual,stuck,single,intersect,processes)
