@@ -3,9 +3,11 @@ import adjmatrix
 import intersect
 import hashlib
 import json
+import itertools
+import spiral
 from math import sqrt
 from os import system
-from collections import Counter
+from collections import Counter, defaultdict
 from copy import deepcopy
 from random import randint, sample, choice
 
@@ -33,7 +35,25 @@ class PolygonStruct:
         self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "firstnodeisolated":0}
         self.currentdeadends = []
         self.stuck = False
+
+        self.intersectmatrix = {}
     
+
+    def generateIntersectMatrix(self):
+
+        combinations = list(itertools.combinations(range(self.size),2))
+        for c in combinations:
+            self.intersectmatrix[c] = []
+        for k,v in self.intersectmatrix.items():
+            for otherpairofvertex in self.intersectmatrix:
+                p = self.loi[k[0]]["v"]
+                q = self.loi[k[1]]["v"]
+                r = self.loi[otherpairofvertex[0]]["v"]
+                s = self.loi[otherpairofvertex[1]]["v"]
+                if intersect.doIntersect(p,q,r,s):
+                    self.intersectmatrix[k].append(otherpairofvertex)
+
+
 
     def area(self):
         area = float(0)
@@ -473,3 +493,13 @@ class PolygonStruct:
 
     def numberofisolatedparts(self):
         return self.am.getNumberConnectedComponents()
+
+
+if __name__=="__main__":
+    g = spiral.Spiral(xzero=1,yzero=1)
+    vertexlist = list(set(g.generate(steps=5)))
+    vertexlist = [(0,5),(1,0),(3,3),(5,1),(7,5)]
+    ps = PolygonStruct(vertexlist)
+    ps.setInitialVertex()
+    ps.generateIntersectMatrix()
+    print(ps.intersectmatrix)

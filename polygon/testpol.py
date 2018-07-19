@@ -58,7 +58,7 @@ def savefile(uniquepolygons):
     f.close()
     print("SAVED",filename)
 
-def runTest(cycles, steps, alist, action, visual, stuck, single):
+def runTest(cycles, steps, alist, action, visual, stuck, single, intersect):
 
     uniquepolygons = []
     jsonpolygons = []
@@ -77,6 +77,11 @@ def runTest(cycles, steps, alist, action, visual, stuck, single):
 
 
     cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "stuck":0, "firstnodeisolated": 0, "polstuck":[]}
+    if intersect:
+        ps = polygon.PolygonStruct(alist)
+        ps.setInitialVertex()
+        ps.generateIntersectMatrix()
+        print("INTERSECT MATRIX",ps.intersectmatrix)
 
     for i in range(cycles):
         print(".",end='',flush=True)
@@ -259,6 +264,8 @@ if __name__=="__main__":
                     action="store_true")
     parser.add_argument("--single", help="output polygons as we find them",
                     action="store_true")
+    parser.add_argument("--intersect", help="generate intersect matrix of all points",
+                    action="store_true")
 
 
 
@@ -297,5 +304,9 @@ if __name__=="__main__":
     else:
         single = False
 
+    if args.intersect:
+        intersect = True
+    else:
+        intersect = False
 
-    runTest(cycles,steps,alist,action,visual,stuck,single)
+    runTest(cycles,steps,alist,action,visual,stuck,single,intersect)

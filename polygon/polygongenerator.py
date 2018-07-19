@@ -24,6 +24,7 @@ def generate(cycles, vertexlist):
                 if ps.lov < psreverse:
                     uniquepolygons.append(ps.lov)
                 else:
+                    ps.lov = psreverse
                     uniquepolygons.append(psreverse)
 
                 yield ps.getJSON()
