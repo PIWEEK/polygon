@@ -19,7 +19,7 @@ def hello_world():
     json_data = request.get_json()
     params_uuid = str(uuid.uuid1())
     params_dict[params_uuid] = {
-        "cycles": 500, #json_data["cycles"],
+        "cycles": json_data["cycles"],
         "vertex": [(point["x"], point["y"]) for point in json_data["points"]],
     }
 
