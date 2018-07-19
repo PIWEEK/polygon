@@ -60,20 +60,11 @@
 
       <div  class="column points" v-bind:style="{ height: settings.canvasHeight + 55 + 'px' }">
         <h3>Points (data)</h3>
-        <table  class="ui selectable table collapsing">
-          <thead>
-            <tr><th>N°</th><th>X</th><th>Y</th><th>Remove</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="(point, index) in points" :key="point">
-
-              <td>{{index + 1}}</td>
-              <td><input v-model.number="point.x" type="number"/></td>
-              <td><input v-model.number="point.y" type="number"/></td>
-              <td><button @click="removePoint(index)">X</button></td>
-              </tr>
-          </tbody>
-        </table>
+        <div class="ui form">
+          <div class="field">
+            <textarea v-model="pointsSummary"></textarea>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -158,7 +149,23 @@ export default {
     }
   },
   computed: {
-
+    pointsSummary: {
+      get () {
+        return this.points.map((e) =>
+          e.x + ', ' + e.y
+        ).join('\n')
+      },
+      set (value) {
+        this.points = value.split('\n').map((e) => {
+          const sp = e.replace(/ /g, '').split(',')
+          console.log(sp)
+          return {
+            x: parseInt(sp[0]),
+            y: parseInt(sp[1])
+          }
+        })
+      }
+    }
   },
   directives: {
     insertPoints: function (canvasElement, binding) {
