@@ -16,7 +16,7 @@ def generate(cycles, vertexlist):
                 break
 
         if ps.checkValidFinalPolygon():
-            ps.lov.append(ps.lov[0])
+            ps.lov.append(ps.initialvertex)
             psreverse = ps.lov[:]
             psreverse.reverse()
 
