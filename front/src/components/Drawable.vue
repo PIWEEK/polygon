@@ -165,8 +165,6 @@ export default {
         context.lineTo(point.x + settings.pointSize, point.y + settings.pointSize)
         context.lineTo(point.x + settings.pointSize, point.y - settings.pointSize)
         context.lineTo(point.x - settings.pointSize, point.y - settings.pointSize)
-        context.fillStyle = settings.fillStyle
-        context.fill()
         context.strokeStyle = settings.strokeStyle
         context.stroke()
       }
