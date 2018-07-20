@@ -1,5 +1,6 @@
 <template>
-  <div class="ui four column grid">
+  <div class="ui four column grid inverted segment">
+    <h1>Polygons</h1>
     <div class="four column row">
       <div class="column">
         <h3>Actions:</h3>
@@ -7,36 +8,53 @@
           <div class="ui active inline loader"></div> Processing
         </div>
         <div v-else>
-          <button class="ui button" @click="submitPoints" :disabled="processing">
+          <button class="ui button teal" @click="submitPoints" :disabled="processing">
             Submit points
           </button>
-          <button class="ui button" @click="clearPoints" :disabled="processing">Clear points</button>
+          <button class="ui button yellow" @click="clearPoints" :disabled="processing">Clear points</button>
         </div>
 
         <h3>Properties:</h3>
-        <ul>
-          <li>
-            <label>Width: </label>
-            <input type="number" v-model.number="settings.canvasWidth">
-          </li>
-          <li>
-            <label>Height: </label>
-            <input type="number" v-model.number="settings.canvasHeight">
-          </li>
-          <li>
-            <label>Point Size:</label>
-            <input type="number" v-model.number="settings.pointSize">
-          </li>
-          <li>
-            <label>Cycles:</label>
-            <input type="number" v-model.number="settings.cycles">
-          </li>
-        </ul>
+        <div class="ui inverted form">
+          <div class="inline fields">
+            <div class="four wide field">
+              <label>Width: </label>
+            </div>
+            <div class="eight wide field">
+              <input type="number" v-model.number="settings.canvasWidth">
+            </div>
+          </div>
+          <div class="inline fields">
+            <div class="four wide field">
+              <label>Height: </label>
+            </div>
+            <div class="eight wide field">
+              <input type="number" v-model.number="settings.canvasHeight">
+            </div>
+          </div>
+          <div class="inline fields">
+            <div class="four wide field">
+              <label>Point Size:</label>
+            </div>
+            <div class="eight wide field">
+              <input type="number" v-model.number="settings.pointSize">
+            </div>
+          </div>
+          <div class="inline fields">
+            <div class="four wide field">
+              <label>Cycles:</label>
+            </div>
+            <div class="eight wide field">
+              <input type="number" v-model.number="settings.cycles">
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="column">
         <h3>Draw</h3>
         <canvas
+          class="fat-border"
           ref="inputCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -51,6 +69,7 @@
       <div class="column">
         <h3>CurrentResult ({{ polygonCounter }})</h3>
         <canvas
+          class="fat-border"
           ref="outputCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -61,8 +80,10 @@
       <div  class="column points" v-bind:style="{ height: settings.canvasHeight + 55 + 'px' }">
         <h3>Points (data)</h3>
         <div class="ui form">
-          <div class="field">
-            <textarea v-model="pointsSummary"></textarea>
+          <div class="two fields">
+            <div class="field">
+              <textarea v-model="pointsSummary" v-bind:style="{ height: settings.canvasHeight + 'px', width: settings.canvasWidth + 'px'  }"></textarea>
+            </div>
           </div>
         </div>
       </div>
@@ -73,6 +94,7 @@
       <div class="column">
         <h3>Min perimeter ({{ minPerimeter }})</h3>
         <canvas
+          class="border"
           ref="minPerimeterCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -83,6 +105,7 @@
       <div class="column">
         <h3>Max perimeter ({{ maxPerimeter }})</h3>
         <canvas
+          class="border"
           ref="maxPerimeterCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -93,6 +116,7 @@
       <div class="column">
         <h3>Min area ({{ minArea }})</h3>
         <canvas
+          class="border"
           ref="minAreaCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -103,6 +127,7 @@
       <div class="column">
         <h3>Max area ({{ maxArea }})</h3>
         <canvas
+          class="border"
           ref="maxAreaCanvas"
           :width="settings.canvasWidth"
           :height="settings.canvasHeight"
@@ -128,7 +153,7 @@ export default {
         canvasWidth: 300,
         pointSize: 2,
         strokeStyle: 'darkgrey',
-        fillStyle: 'rgb(200,0,0)',
+        fillStyle: '#00B5AD',
         cycles: 500
       },
       dragMode: false,
@@ -202,8 +227,6 @@ export default {
       context.closePath()
       context.fillStyle = settings.fillStyle
       context.fill()
-      context.strokeStyle = settings.strokeStyle
-      context.stroke()
     }
   },
   methods: {
@@ -350,19 +373,22 @@ export default {
 }
 </script>
 <style>
-  h3 {
-    padding-top: 15px;
-  }
   input {
     width: 150px;
+    color: black;
   }
   label {
     display:inline-block;
     width: 70px;
   }
-  canvas {
+  .border {
     border:1px solid #bbb;
   }
+
+  .fat-border {
+    border:3px solid #bbb;
+  }
+
   .grid-container {
     margin-left: 15px;
     display: grid;
@@ -375,4 +401,5 @@ export default {
   .points {
     overflow-y: scroll;
   }
+
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="ui">
+  <div id="app" class="ui inverted">
     <drawable></drawable>
   </div>
 </template>
@@ -23,5 +23,8 @@ export default {
   color: #2c3e50;
   margin-left: 20px;
   margin-top: 20px;
+}
+body {
+  background: #1B1C1D;
 }
 </style>
