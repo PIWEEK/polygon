@@ -20,7 +20,7 @@
             <div class="four wide field">
               <label>Width: </label>
             </div>
-            <div class="eight wide field">
+            <div class="six wide field">
               <input type="number" v-model.number="settings.canvasWidth">
             </div>
           </div>
@@ -28,7 +28,7 @@
             <div class="four wide field">
               <label>Height: </label>
             </div>
-            <div class="eight wide field">
+            <div class="six wide field">
               <input type="number" v-model.number="settings.canvasHeight">
             </div>
           </div>
@@ -36,7 +36,7 @@
             <div class="four wide field">
               <label>Point Size:</label>
             </div>
-            <div class="eight wide field">
+            <div class="six wide field">
               <input type="number" v-model.number="settings.pointSize">
             </div>
           </div>
@@ -44,8 +44,8 @@
             <div class="four wide field">
               <label>Cycles:</label>
             </div>
-            <div class="eight wide field">
-              <input type="number" v-model.number="settings.cycles">
+            <div class="six wide field">
+              <input type="number" v-model.number="cycles">
             </div>
           </div>
         </div>
@@ -151,10 +151,9 @@ export default {
       settings: {
         canvasHeight: 300,
         canvasWidth: 300,
-        pointSize: 2,
-        strokeStyle: 'darkgrey',
-        fillStyle: '#00B5AD',
-        cycles: 500
+        pointSize: 3,
+        strokeStyle: 'rgba(255,255,255,1)',
+        fillStyle: '#00B5AD'
       },
       dragMode: false,
       overPoint: {},

@@ -15,7 +15,7 @@ sockets = Sockets(app)
 params_dict = {}
 
 @app.route('/', methods=['POST'])
-def hello_world():
+def main():
     json_data = request.get_json()
     params_uuid = str(uuid.uuid1())
     params_dict[params_uuid] = {
@@ -26,7 +26,7 @@ def hello_world():
     return jsonify({"uuid": params_uuid})
 
 @sockets.route('/polygons/<param_uuid>')
-def echo_socket(ws, param_uuid):
+def polygons(ws, param_uuid):
     params = params_dict.get(param_uuid, None)
     if params is not None:
         for polygon in polygongenerator.generate(params["cycles"], params["vertex"]):
