@@ -1,11 +1,14 @@
 import sys
+import os
+import time
 import polygon
 import spiral
-from multiprocessing import Pool, Process, Queue, Manager
+from multiprocessing import Pool, Process, Queue, Manager, cpu_count
 
 manager = Manager()
 uniquepolygons = manager.list()
 stuckpolygons = manager.list()
+
 
 
 def obtainPolygons(psStruct):
@@ -36,19 +39,25 @@ def obtainPolygons(psStruct):
 
     return None
 
-def generate(cycles, vertexlist):
-    global uniquepolygons
-    gapolygons = []
+def writePolygonToFile(filename, polygon):
+    path_to_filename = os.path.join("/tmp",filename)
+    with open(path_to_filename, 'a') as dest_file:
+        print(polygon.getJSON(), file=dest_file)
+
+def generate(cycles, vertexlist, filename):
+
+    print("FN",filename)
     psStructs = []
     for i in range(cycles):
         ps = polygon.PolygonStruct(vertexlist)
         psStructs.append(ps)
 
-
-    pool = Pool(4)
-    for result in pool.imap_unordered(obtainPolygons, psStructs):
-        if result:
-            yield result.getJSON()
+    num_cores = cpu_count() -2
+    pool = Pool(num_cores   )
+    for p in pool.imap_unordered(obtainPolygons, psStructs):
+        if p:
+            writePolygonToFile(filename, p)
+            yield p.getJSON()
 
 
 if __name__=="__main__":
@@ -61,5 +70,6 @@ if __name__=="__main__":
 
     g = spiral.Spiral(xzero=1,yzero=1)
     vertexlist = list(set(g.generate(steps=steps)))
-    for g in generate(cycles, vertexlist):
+    filename = str(time.time()) + ".json"
+    for g in generate(cycles, vertexlist, filename):
         print(g)
