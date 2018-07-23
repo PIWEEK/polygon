@@ -1,53 +1,54 @@
 import sys
 import polygon
 import spiral
-from multiprocessing import Pool, Process, Queue
-import multiprocessing as mp
+from multiprocessing import Pool, Process, Queue, Manager
 
-ctx = mp.get_context('spawn')
-q = ctx.Queue()
+manager = Manager()
+uniquepolygons = manager.list()
+stuckpolygons = manager.list()
 
-g = spiral.Spiral(xzero=1,yzero=1)
-steps = 10
-vertexlist = list(set(g.generate(steps=steps)))
 
-def obtainPolygon(n):
-    ps = polygon.PolygonStruct(vertexlist)
+def obtainPolygons(psStruct):
+    global uniquepolygons
+    ps = psStruct
     ps.setInitialVertex()
 
     while not ps.allPointsUsed():
         ps.cycle()
         if ps.stuck:
+            stuckpolygons.append(ps.lov)
             break
 
     if ps.checkValidFinalPolygon():
         ps.lov.append(ps.initialvertex)
         psreverse = ps.lov[:]
         psreverse.reverse()
-        if ps.lov > psreverse:
-            ps.lov = psreverse
-        print("cycles",n)
-        q.put(ps.getJSON())
-#        return ps.lov
-    # else:
-    #     q.put(None)
-    #return None
+        
+        if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
+            
+            if ps.lov < psreverse:
+                uniquepolygons.append(ps.lov)
+            else:
+                ps.lov = psreverse
+                uniquepolygons.append(ps.lov)
+
+            return ps
+
+    return None
 
 def generate(cycles, vertexlist):
-   
-    uniquepolygons = []
-    pool = Pool(4) 
+    global uniquepolygons
+    gapolygons = []
+    psStructs = []
+    for i in range(cycles):
+        ps = polygon.PolygonStruct(vertexlist)
+        psStructs.append(ps)
 
-    psStructList = []
-    
 
-    pool.map(obtainPolygon, range(500))
-    #pool.apply_async(obtainPolygon,range(500),1)
-    #p = mp.Process(target=foo, args=(q,))
-    #p.start()
-    h = q.get()
-    yield h
-    
+    pool = Pool(4)
+    for result in pool.imap_unordered(obtainPolygons, psStructs):
+        if result:
+            yield result.getJSON()
 
 
 if __name__=="__main__":
@@ -60,5 +61,5 @@ if __name__=="__main__":
 
     g = spiral.Spiral(xzero=1,yzero=1)
     vertexlist = list(set(g.generate(steps=steps)))
-    for p in generate(cycles, vertexlist):
-        print(p)
+    for g in generate(cycles, vertexlist):
+        print(g)

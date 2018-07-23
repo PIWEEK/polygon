@@ -4,7 +4,7 @@ from flask import request
 from flask_sockets import Sockets
 from flask_cors import CORS
 
-import polygongenerator
+import polygongeneratormp as polygongenerator
 import websockets
 import uuid
 
