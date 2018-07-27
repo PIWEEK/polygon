@@ -44,6 +44,11 @@ def writePolygonToFile(filename, polygon):
     with open(path_to_filename, 'a') as dest_file:
         print(polygon.getJSON(), file=dest_file)
 
+def psStructsIter(num, vertexlist):
+    for i in range(num):
+        ps = polygon.PolygonStruct(vertexlist)
+        yield ps
+        
 def generate(cycles, vertexlist, filename):
 
     print("FN",filename)
@@ -51,18 +56,13 @@ def generate(cycles, vertexlist, filename):
     num_cores = cpu_count() -2
     pool = Pool(num_cores)
     
-    batchNumber = 100
+    batchNumber = 500
     batches = int(cycles/batchNumber)
-    for i in range(batches):
-        psStructs = []
-        for i in range(batchNumber):
-            ps = polygon.PolygonStruct(vertexlist)
-            psStructs.append(ps)
 
-        for p in pool.imap_unordered(obtainPolygons, psStructs):
-            if p:
-                writePolygonToFile(filename, p)
-                yield p.getJSON()
+    for p in pool.imap_unordered(obtainPolygons, psStructsIter(cycles, vertexlist)):
+        if p:
+            writePolygonToFile(filename, p)
+            yield p.getJSON()
 
 
 if __name__=="__main__":
