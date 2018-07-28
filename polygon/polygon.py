@@ -249,6 +249,7 @@ class PolygonStruct:
              inode = self.lop[v]["i"]
              inodeplus = self.lop[vplus]["i"]
              self.am.adjmatrix.add_edge(inode,inodeplus)
+        
 
     def removeSegment(self, p, q):
         pnode = self.lop[p]["i"]
@@ -398,43 +399,47 @@ class PolygonStruct:
 
             self.oldadjmatrix = deepcopy(self.am.adjmatrix) # copy so we can backtrack
             #print("ACABAMOS DE BORRAR",self.firstnodesegments)
-            self.removeIntersectSegments(q,nv)
-            self.firstnodesegments = self.removenodesegments(self.initialvertex)
-            
-            self.qnodesegments = self.removenodesegments(q)
-            self.nvnodesegments = self.removenodesegments(nv)
+
+            if len(self.lov) < self.size:
+
+                self.removeIntersectSegments(q,nv)
+                self.am.removeSegment(0,self.lop[nv]["i"])        
+
+                self.firstnodesegments = self.removenodesegments(self.initialvertex)
+               # print("SFN",self.firstnodesegments)
+                self.qnodesegments = self.removenodesegments(q)
+                self.nvnodesegments = self.removenodesegments(nv)
 
 
-            self.rebuildLOVGraph()
+                self.rebuildLOVGraph()
 
            
-            if len(self.firstnodesegments) > 1:
-             if self.checkIsolatedGraphs():
-                if self.checkUnreachableOneNeighborNodes():
-                    if self.checkThreeOneNeighborNodes():
-                        self.addnodesegments(self.nvnodesegments)
+                if len(self.firstnodesegments) > 1:
+                 if self.checkIsolatedGraphs():
+                    if self.checkUnreachableOneNeighborNodes():
+                        if self.checkThreeOneNeighborNodes():
+                            self.addnodesegments(self.nvnodesegments)
 
-                        self.addnodesegments(self.firstnodesegments)
+                            self.addnodesegments(self.firstnodesegments)
                         # self.removeIntersectSegments(q,nv,self.firstnodesegments)
 
-                        self.am.removeSegment(0,self.lop[nv]["i"])
+                        
 
-                        self.currentdeadends = []
+                            self.currentdeadends = []
 
+                        else:
+                            self.cycleinfo["threeone"] +=1
+                            self.undoLastVertex()
                     else:
-                        self.cycleinfo["threeone"] +=1
+                        self.cycleinfo["unreachable"] +=1
                         self.undoLastVertex()
-                else:
-                    self.cycleinfo["unreachable"] +=1
+                 else:
+                    self.cycleinfo["subgraphs"] +=1
                     self.undoLastVertex()
-             else:
-                #print(self.traceback())
-                self.cycleinfo["subgraphs"] +=1
-                self.undoLastVertex()
-            else:
-                self.cycleinfo["firstnodeisolated"] +=1
-                #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
-                self.undoLastVertex()
+                else:
+                    self.cycleinfo["firstnodeisolated"] +=1
+                    #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
+                    self.undoLastVertex()
         else:
             
             self.stuck = True
