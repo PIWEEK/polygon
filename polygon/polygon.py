@@ -441,7 +441,7 @@ class PolygonStruct:
                     #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
                     self.undoLastVertex()
         else:
-            
+            #self.rebuildTemporaryPolygon(set(self.lov[:-1]))
             self.stuck = True
             
 

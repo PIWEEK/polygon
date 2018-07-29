@@ -13,6 +13,7 @@ from multiprocessing.pool import ThreadPool
 manager = Manager()
 uniquepolygons = manager.list()
 stuckpolygons = manager.list()
+lock = Lock()
 
 
 def perimeter(polygon):
@@ -79,7 +80,7 @@ def obtainPolygons(psStruct):
             break
 
     if ps.checkValidFinalPolygon():
-        print(".",end='',flush=True)
+        #print(".",end='',flush=True)
         ps.lov.append(ps.initialvertex)
         psreverse = ps.lov[:]
         psreverse.reverse()
@@ -89,22 +90,22 @@ def obtainPolygons(psStruct):
         # else:
         #     ps.lov = psreverse
         #     return ps.lov
+        lock.acquire()
         
         if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
             print("*",end='',flush=True)
  
-            
             if ps.lov < psreverse:
                 uniquepolygons.append(ps.lov)
             else:
                 ps.lov = psreverse
                 uniquepolygons.append(ps.lov)
                 
-            # lock.release()
+            lock.release()    
             return ps.lov
         else:
             print("-",end='',flush=True)
-        # lock.release()
+        lock.release()
 
 def init(l):
     global lock

@@ -33,7 +33,7 @@ def polygons(ws, param_uuid):
 
     if params is not None:
         for polygon in polygongenerator.generate(params["cycles"], params["vertex"], filename):
-            print(polygon)
+            #print(polygon)
             ws.send(polygon)
 
         ws.close()

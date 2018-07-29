@@ -3,12 +3,12 @@ import os
 import time
 import polygon
 import spiral
-from multiprocessing import Pool, Process, Queue, Manager, cpu_count
+from multiprocessing import Pool, Process, Queue, Lock, Manager, cpu_count
 
 manager = Manager()
 uniquepolygons = manager.list()
 stuckpolygons = manager.list()
-
+lock = Lock()
 
 
 def obtainPolygons(psStruct):
@@ -26,6 +26,8 @@ def obtainPolygons(psStruct):
         ps.lov.append(ps.initialvertex)
         psreverse = ps.lov[:]
         psreverse.reverse()
+
+        lock.acquire()
         
         if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
             
@@ -35,8 +37,11 @@ def obtainPolygons(psStruct):
                 ps.lov = psreverse
                 uniquepolygons.append(ps.lov)
 
-            return ps
+            lock.release()
 
+            return ps
+        lock.release()
+    
     return None
 
 def writePolygonToFile(filename, polygon):
@@ -53,7 +58,7 @@ def generate(cycles, vertexlist, filename):
 
     print("FN",filename)
 
-    num_cores = cpu_count() -2
+    num_cores = cpu_count() -1
     pool = Pool(num_cores)
     
     batchNumber = 500
