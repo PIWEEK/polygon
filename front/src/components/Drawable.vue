@@ -210,11 +210,11 @@ export default {
       }
     },
     insertSides: (canvasElement, binding) => {
+      const points = JSON.parse(JSON.stringify(binding.value.points))
       const settings = binding.value.settings
       const context = canvasElement.getContext('2d')
       context.clearRect(0, 0, settings.canvasWidth, settings.canvasHeight)
 
-      const points = JSON.parse(JSON.stringify(binding.value.points))
       if (!points[0]) {
         return
       }
@@ -226,6 +226,17 @@ export default {
       context.closePath()
       context.fillStyle = settings.fillStyle
       context.fill()
+
+      for (let point of points.slice(1)) {
+        context.beginPath()
+        context.moveTo(point[0] - settings.pointSize, point[1] - settings.pointSize)
+        context.lineTo(point[0] - settings.pointSize, point[1] + settings.pointSize)
+        context.lineTo(point[0] + settings.pointSize, point[1] + settings.pointSize)
+        context.lineTo(point[0] + settings.pointSize, point[1] - settings.pointSize)
+        context.lineTo(point[0] - settings.pointSize, point[1] - settings.pointSize)
+        context.strokeStyle = settings.strokeStyle
+        context.stroke()
+      }
     }
   },
   methods: {
