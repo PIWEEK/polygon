@@ -29,11 +29,10 @@ def main():
 @sockets.route('/polygons/<param_uuid>')
 def polygons(ws, param_uuid):
     params = params_dict.get(param_uuid, None)
-    filename = str(time()) + ".json"
+    filename = param_uuid + ".json"
 
     if params is not None:
         for polygon in polygongenerator.generate(params["cycles"], params["vertex"], filename):
-            #print(polygon)
             ws.send(polygon)
 
         ws.close()

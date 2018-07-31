@@ -5,13 +5,18 @@
       <div class="column">
         <h3>Actions:</h3>
         <div v-if="processing">
-          <div class="ui active inline loader"></div> Processing
+          <button class="ui button teal" @click="cancel">
+            <div class="ui active inline loader"></div> Cancel
+          </button>
         </div>
         <div v-else>
           <button class="ui button teal" @click="submitPoints" :disabled="processing">
             Submit points
           </button>
           <button class="ui button yellow" @click="clearPoints" :disabled="processing">Clear points</button>
+          <a v-if="generatedFile" v-bind:href="'/media/'+ generatedFile" target="_blank">
+            <i class="download icon"></i>
+          </a>
         </div>
 
         <h3>Properties:</h3>
@@ -169,7 +174,9 @@ export default {
       maxPerimeter: Number.MIN_SAFE_INTEGER,
       minArea: Number.MAX_SAFE_INTEGER,
       maxArea: Number.MIN_SAFE_INTEGER,
-      processing: false
+      processing: false,
+      generatedFile: null,
+      ws: null
     }
   },
   computed: {
@@ -262,6 +269,11 @@ export default {
       return true
     },
 
+    cancel () {
+      this.processing = false
+      this.ws.close()
+    },
+
     submitPoints () {
       this.resetCalculatedData()
       const payload = {
@@ -270,10 +282,11 @@ export default {
       }
       this.$http.post('http://127.0.0.1:5000/', payload).then((response) => {
         const uuid = response.data.uuid
+        this.generatedFile = uuid + '.json'
         this.polygonCounter = 0
         this.processing = true
-        const ws = new WebSocket('ws://127.0.0.1:5000/polygons/' + uuid)
-        ws.onmessage = (event) => {
+        this.ws = new WebSocket('ws://127.0.0.1:5000/polygons/' + uuid)
+        this.ws.onmessage = (event) => {
           this.polygonCounter += 1
           const data = JSON.parse(event.data)
           const area = data.properties.area
@@ -301,8 +314,8 @@ export default {
 
           this.resultPoints = data.vertex
         }
-        ws.onclose = (event) => {
-          this.processing = false
+        this.ws.onclose = (event) => {
+          this.cancel()
         }
       })
     },
@@ -317,6 +330,7 @@ export default {
       this.minArea = Number.MAX_SAFE_INTEGER
       this.maxArea = Number.MIN_SAFE_INTEGER
       this.polygonCounter = 0
+      this.generatedFile = null
     },
     clearPoints () {
       this.points = []
