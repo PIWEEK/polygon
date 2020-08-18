@@ -312,7 +312,7 @@ if __name__=="__main__":
         steps = 1
 
     if args.inputfile:
-        alist = [(int(l.split()[0]),int(l.split()[1])) for l in open(args.inputfile,'r').readlines()]
+        alist = [(float(l.split()[0]),float(l.split()[1])) for l in open(args.inputfile,'r').readlines()]
     else:
         g = spiral.Spiral(xzero=1,yzero=1)
         alist = list(set(g.generate(steps=steps)))

@@ -1,3 +1,6 @@
+
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 from time import time
 from flask import Flask
 from flask import jsonify

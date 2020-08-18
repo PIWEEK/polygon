@@ -280,12 +280,12 @@ export default {
         points: this.points,
         cycles: this.cycles
       }
-      this.$http.post('http://127.0.0.1:5000/', payload).then((response) => {
+      this.$http.post('http://polygon.science:5000/', payload).then((response) => {
         const uuid = response.data.uuid
         this.generatedFile = uuid + '.json'
         this.polygonCounter = 0
         this.processing = true
-        this.ws = new WebSocket('ws://127.0.0.1:5000/polygons/' + uuid)
+        this.ws = new WebSocket('ws://polygon.science:5000/polygons/' + uuid)
         this.ws.onmessage = (event) => {
           this.polygonCounter += 1
           const data = JSON.parse(event.data)

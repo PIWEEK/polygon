@@ -45,10 +45,11 @@ def obtainPolygons(psStruct):
     return None
 
 def writePolygonToFile(filename, polygon):
-    path_to_filename = os.path.join("/tmp",filename)
+    path_to_filename = os.path.join("/home/polygon/tmp/media",filename)
     with open(path_to_filename, 'a') as dest_file:
         print(polygon.getJSON(), file=dest_file)
 
+        
 def psStructsIter(num, vertexlist):
     for i in range(num):
         ps = polygon.PolygonStruct(vertexlist)
