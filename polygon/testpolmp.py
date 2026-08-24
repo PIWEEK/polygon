@@ -6,14 +6,9 @@ import time
 import itertools
 import hashlib
 import goldenspiral, spiral
-from multiprocessing import Pool, Queue, Lock, Manager
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool, Manager
 
-
-manager = Manager()
-uniquepolygons = manager.list()
-stuckpolygons = manager.list()
-lock = Lock()
+_worker_state = {}
 
 
 def perimeter(polygon):
@@ -67,9 +62,17 @@ def savefile(uniquepolygons):
     f.close()
     print("SAVED",filename)
 
-def obtainPolygons(psStruct):
-    global uniquepolygons
-    ps = psStruct
+def _init_worker(uniquepolygons, stuckpolygons, lock):
+    _worker_state["uniquepolygons"] = uniquepolygons
+    _worker_state["stuckpolygons"] = stuckpolygons
+    _worker_state["lock"] = lock
+
+def obtainPolygons(alist):
+    uniquepolygons = _worker_state["uniquepolygons"]
+    stuckpolygons = _worker_state["stuckpolygons"]
+    lock = _worker_state["lock"]
+
+    ps = polygon.PolygonStruct(alist)
     ps.setInitialVertex()
 
     while not ps.allPointsUsed():
@@ -80,40 +83,24 @@ def obtainPolygons(psStruct):
             break
 
     if ps.checkValidFinalPolygon():
-        #print(".",end='',flush=True)
         ps.lov.append(ps.initialvertex)
         psreverse = ps.lov[:]
         psreverse.reverse()
 
-        # if ps.lov < psreverse:
-        #     return ps.lov
-        # else:
-        #     ps.lov = psreverse
-        #     return ps.lov
-        lock.acquire()
-        
-        if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
-            print("*",end='',flush=True)
- 
-            if ps.lov < psreverse:
-                uniquepolygons.append(ps.lov)
-            else:
-                ps.lov = psreverse
-                uniquepolygons.append(ps.lov)
-                
-            lock.release()    
-            return ps.lov
-        else:
-            print("-",end='',flush=True)
-        lock.release()
+        with lock:
+            if ps.lov not in uniquepolygons and psreverse not in uniquepolygons:
+                print("*",end='',flush=True)
 
-def init(l):
-    global lock
-    lock = l
+                if ps.lov < psreverse:
+                    uniquepolygons.append(ps.lov)
+                else:
+                    ps.lov = psreverse
+                    uniquepolygons.append(ps.lov)
+
+                return ps.lov
+            print("-",end='',flush=True)
 
 def runTest(cycles, steps, alist, action, visual, stuck, single, intersect, processes):
-
-    global uniquepolygons
 
     jsonpolygons = []
     t=0
@@ -140,31 +127,31 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect, proc
         print("INTERSECT MATRIX",ps.intersectmatrix)
 
 
-    
+    manager = Manager()
+    uniquepolygons = manager.list()
+    stuckpolygons = manager.list()
+    lock = manager.Lock()
+
     gaps = 500
-    steps = int(cycles/gaps)
+    num_batches = max(1, (cycles + gaps - 1) // gaps)
     gapolygons = []
-    for s in range(steps):
-        psStructs = []
+    completed = 0
+    for s in range(num_batches):
+        batch_size = min(gaps, cycles - completed)
+        if batch_size <= 0:
+            break
 
-        for g in range(gaps):
-            ps = polygon.PolygonStruct(alist)
-            psStructs.append(ps)
-   
+        with Pool(
+            processes,
+            initializer=_init_worker,
+            initargs=(uniquepolygons, stuckpolygons, lock),
+        ) as pool:
+            polygons = pool.map(obtainPolygons, [alist] * batch_size)
 
-        pool = Pool(processes)#,initializer=init, initargs=(l,))
-        polygons = pool.map(obtainPolygons, psStructs)
-        pool.close()
-        pool.join()
+        completed += batch_size
         gapolygons.extend(polygons)
         gapolygons = [p for p in gapolygons if p]
-        print("\n############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",gaps*(s+1),len(gapolygons))
-        
-
-    
-    #uniquepolygons = [p for p in gapolygons if p]
-         
-    #print("UP",uniquepolygons)
+        print("\n############# CYCLE NUMBER and NUMBER OF POLYGONS SO FAR:",completed,len(gapolygons))
 
 
 # PERIMETER COMPUTE
@@ -245,6 +232,7 @@ def runTest(cycles, steps, alist, action, visual, stuck, single, intersect, proc
     cycleinfo["polstuck"] =  list(k for k,_ in itertools.groupby(cycleinfo["polstuck"]))
 
     if stuck:
+        ps = polygon.PolygonStruct(alist)
         resfile = open("templates/templatestuck.gnu",'r')
         template = resfile.read()
         size = len(cycleinfo["polstuck"])
@@ -289,6 +277,8 @@ if __name__=="__main__":
     parser.add_argument("--steps", help="set the number of steps for the spiral polygon generation",
                     type=int)
     parser.add_argument("--inputfile", help="set the file containing the input points")
+    parser.add_argument("--inputftfile", help="set the file containing the input points in int,float,float,word")
+    parser.add_argument("--inputwordsfile", help="set the file containing the input words, one per line")
     parser.add_argument("--action", help="save or check")
     parser.add_argument("--visual", help="show visual ouput",
                     action="store_true")
@@ -313,6 +303,20 @@ if __name__=="__main__":
 
     if args.inputfile:
         alist = [(float(l.split()[0]),float(l.split()[1])) for l in open(args.inputfile,'r').readlines()]
+    elif args.inputwordsfile:
+        words = [w.strip() for w in open(args.inputwordsfile,'r').readlines()]
+
+        if args.inputftfile:
+            dictlines = {}
+            lines = [l.split(",") for l in open(args.inputftfile,'r').readlines()]
+            for l in lines:
+                dictlines[l[-1].strip()]=l[1:3]
+            alist = []
+            for w in words:
+                alist.append((float(dictlines[w][0]),float(dictlines[w][1])))
+        else:
+            print("error: --inputwordsfile requires --inputftfile")
+            sys.exit(1)
     else:
         g = spiral.Spiral(xzero=1,yzero=1)
         alist = list(set(g.generate(steps=steps)))

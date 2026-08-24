@@ -14,7 +14,12 @@ from random import randint, sample, choice
 
 class PolygonStruct:
 
-    def __init__(self, listofpoints):
+    # Backtracking is heavy tailed: a handful of retries rescues most near
+    # misses, while deep search burns time on subtrees a fresh random restart
+    # escapes for free.  Raise it when a single polygon must succeed.
+    DEFAULT_MAX_BACKTRACKS = 10
+
+    def __init__(self, listofpoints, maxbacktracks=DEFAULT_MAX_BACKTRACKS):
         listofpoints.sort()
         self.listofpoints = listofpoints
 
@@ -35,6 +40,11 @@ class PolygonStruct:
         self.cycleinfo = {"subgraphs":0, "threeone":0,"unreachable":0, "firstnodeisolated":0}
         self.currentdeadends = []
         self.stuck = False
+
+        # one frame per accepted vertex, so an accepted move can be taken back
+        self.trail = []
+        self.backtracks = 0
+        self.maxbacktracks = maxbacktracks
 
         self.intersectmatrix = {}
     
@@ -108,6 +118,10 @@ class PolygonStruct:
         self.firstnodesegments = []
         self.nvnodesegments = []
         self.qnodesegments = []
+        self.currentdeadends = []
+        self.trail = []
+        self.backtracks = 0
+        self.stuck = False
 
 
 
@@ -153,15 +167,31 @@ class PolygonStruct:
 
         return len(self.lov) == len(self.lop)
 
-    def rebuildTemporaryPolygon(self, listofvertex):
-        self.lov = []
-        listofpoints = list(self.lop.keys())
-        listofpoints.sort()
-        self.am = adjmatrix.AdjacentMatrix(listofpoints)
-        self.oldadjmatrix = deepcopy(self.am.adjmatrix)
-        self.setInitialVertex()
-        for v in listofvertex:
-            self.forcedCycle(v)
+    def snapshotEdges(self):
+        return [tuple(e) for e in self.am.adjmatrix.edges]
+
+    def restoreEdges(self, edges):
+        graph = self.am.adjmatrix
+        graph.remove_edges_from(list(graph.edges))
+        graph.add_edges_from(edges)
+
+    def backtrack(self):
+        """Take back the last accepted vertex and forbid it at that level."""
+        if not self.trail:
+            self.stuck = True
+            return False
+        if self.backtracks >= self.maxbacktracks:
+            self.stuck = True
+            return False
+
+        self.backtracks += 1
+        edges, deadends = self.trail.pop()
+        self.restoreEdges(edges)
+        self.currentdeadends = deadends
+        self.currentdeadends.append((self.lop[self.lov[-2]]["i"],
+                                     self.lop[self.lov[-1]]["i"]))
+        self.lov.pop()
+        return True
 
     def checkValidFinalPolygon(self):
 
@@ -278,7 +308,7 @@ class PolygonStruct:
         return sgwoiv
 
     def getSubGraphWithNoInitialVertex(self):
-        if self.numberofisolatedparts == 1:
+        if self.numberofisolatedparts() == 1:
             return None
         subgraphs = self.am.getConnectedComponents()
         for sg in subgraphs:
@@ -328,8 +358,6 @@ class PolygonStruct:
 
 
 
-
-
     def checkUnreachableOneNeighborNodes(self):
         graph = self.getSubGraphWithNoInitialVertex()
         if not graph:
@@ -347,12 +375,11 @@ class PolygonStruct:
         q = self.lov[-1]
         pIntersect = False
         qIntersect = False
-        nIntersects ={}
+        nIntersects = {n: {"q":False,"p":False} for n in oneNeighborNodes}
         for i in range(len(self.lov)-1):
             r = self.lov[i]
             s = self.lov[i+1]
             for n in oneNeighborNodes:
-                nIntersects[n] = {"q":False,"p":False}
                 #print("testing ONE",n)
                 if intersect.doIntersect(p,n,r,s):
                     nIntersects[n]["p"] = True
@@ -385,6 +412,9 @@ class PolygonStruct:
 
 
     def cycle(self, point=None, verbose=False):
+
+        edgesbeforemove = self.snapshotEdges()
+        deadendsbeforemove = list(self.currentdeadends)
 
         if not point:
             nv = self.tryNewVertex()
@@ -425,6 +455,7 @@ class PolygonStruct:
 
                         
 
+                            self.trail.append((edgesbeforemove, deadendsbeforemove))
                             self.currentdeadends = []
 
                         else:
@@ -440,9 +471,15 @@ class PolygonStruct:
                     self.cycleinfo["firstnodeisolated"] +=1
                     #print("\n\nFIRSTNODESEGMENTS",self.firstnodesegments,self.lov,"\n\n")
                     self.undoLastVertex()
+            else:
+                # closing edge back to the initial vertex is never pruned for,
+                # so it has to be validated before the last vertex is accepted
+                if self.checkValidFinalPolygon():
+                    self.trail.append((edgesbeforemove, deadendsbeforemove))
+                else:
+                    self.undoLastVertex()
         else:
-            #self.rebuildTemporaryPolygon(set(self.lov[:-1]))
-            self.stuck = True
+            self.backtrack()
             
 
 
