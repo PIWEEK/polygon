@@ -41,12 +41,14 @@ class AdjacentMatrix:
 
 
     def getConnectedComponents(self):
-        d = list(nx.connected_component_subgraphs(self.adjmatrix))
-        return d
+        d= (self.adjmatrix.subgraph(c) for c in nx.connected_components(self.adjmatrix))
+        
+        return list(d)
 
     def getNumberConnectedComponents(self):
-        d = list(nx.connected_component_subgraphs(self.adjmatrix))
-
+        d = list(self.adjmatrix.subgraph(c) for c in nx.connected_components(self.adjmatrix))
+        
+        
         return len(d)
 
     def __repr__(self):
